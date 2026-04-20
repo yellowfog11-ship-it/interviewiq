@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { messages, system, max_tokens = 4000 } = req.body;
+  const { messages, system, max_tokens = 16000 } = req.body;
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
   const body = { model: 'claude-sonnet-4-6', max_tokens, messages };
