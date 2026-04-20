@@ -38,5 +38,6 @@ export default async function handler(req, res) {
     }
   }
 
+  console.log('ANALYSIS RESULT:', JSON.stringify(analysis, null, 2));
   res.json(analysis);
 }
