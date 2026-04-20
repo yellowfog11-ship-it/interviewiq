@@ -700,12 +700,10 @@ Return this exact JSON (all text in English):
     const ar = await fetch('/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ system: systemPrompt, messages: [{ role: 'user', content: userPrompt }], max_tokens: 4000 })
+      body: JSON.stringify({ system: systemPrompt, messages: [{ role: 'user', content: userPrompt }], max_tokens: 16000 })
     });
     if (!ar.ok) { const e = await ar.json(); throw new Error('Analysis: ' + (e.error || ar.status)); }
-    const ad = await ar.json();
-    const analysisText = ad.content?.[0]?.text || '{}';
-    const analysis = JSON.parse(analysisText.replace(/```json|```/g, '').trim());
+    const analysis = await ar.json();
     setStep(2, 'done');
 
     // Step 3: training plan
@@ -717,29 +715,18 @@ ${JSON.stringify(analysis)}
 
 Return ONLY valid JSON:
 {
-  "training_items": [
-    {
-      "priority": "critical"|"important"|"polish",
-      "problem": "<one sentence>",
-      "frequency": "<how often>",
-      "question": "<question to re-practice>",
-      "framework": "<STAR|DIGS|CIRCLES|BUS|4P|Elevator Pitch>",
-      "action": "<exactly what to add, remove, or change>"
-    }
-  ],
-  "next_round_tips": ["<tip1>", "<tip2>", "<tip3>"],
-  "top_recommendations": ["<r1>", "<r2>", "<r3>", "<r4>", "<r5>"]
+  "training_items": [...],
+  "next_round_tips": [...],
+  "top_recommendations": [...]
 }`;
 
     const tr = await fetch('/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [{ role: 'user', content: trainPrompt }], max_tokens: 2000 })
+      body: JSON.stringify({ messages: [{ role: 'user', content: trainPrompt }], max_tokens: 4000 })
     });
     if (!tr.ok) { const e = await tr.json(); throw new Error('Training plan: ' + (e.error || tr.status)); }
-    const td = await tr.json();
-    const trainText = td.content?.[0]?.text || '{}';
-    const training = JSON.parse(trainText.replace(/```json|```/g, '').trim());
+    const training = await tr.json();
     setStep(3, 'done');
 
     renderResults(transcript, analysis, training);
