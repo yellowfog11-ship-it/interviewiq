@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InterviewIQ — AI Interview Coach for PM Candidates</title>
+<style>.nav{display:flex;align-items:center;justify-content:space-between;max-width:960px;margin:0 auto;padding:20px 24px}.nav-logo{font-family:'Instrument Serif',serif;font-size:20px;color:var(--ink)}.nav-price{background:var(--accent);color:#fff;font-size:12px;font-weight:500;padding:6px 14px;border-radius:999px;letter-spacing:.03em}</style>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f5f0;
+  --ink: #0f0e0c;
+  --ink2: #4a4740;
+  --ink3: #9a9690;
+  --surface: #ffffff;
+  --border: #e2dfd8;
+  --accent: #1a1a2e;
+  --highlight: #ff6b35;
+  --highlight2: #7c3aed;
+  --success: #059669;
+  --warn: #d97706;
+  --danger: #dc2626;
+  --radius: 12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'Geist',sans-serif;font-weight:300;line-height:1.6;min-height:100vh}
+
+/* ─── HERO ─── */
+.hero{padding:80px 24px 72px;text-align:center;max-width:860px;margin:0 auto}
+.badge{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;padding:6px 14px;border-radius:999px;margin-bottom:32px}
+.badge-dot{width:6px;height:6px;background:var(--highlight);border-radius:50%;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-family:'Instrument Serif',serif;font-size:clamp(40px,7vw,72px);font-weight:400;line-height:1.05;margin-bottom:24px;letter-spacing:-.02em}
+h1 em{font-style:italic;color:var(--highlight)}
+h1 strong{font-weight:400;color:var(--highlight2)}
+.hero-sub{font-size:clamp(16px,2.5vw,20px);color:var(--ink2);max-width:600px;margin:0 auto 40px;line-height:1.65}
+.hero-cta{display:inline-block;background:var(--accent);color:#fff;padding:16px 36px;border-radius:10px;font-size:16px;font-weight:500;text-decoration:none;letter-spacing:.01em;transition:opacity .2s,transform .1s;cursor:pointer;border:none}
+.hero-cta:hover{opacity:.88;transform:translateY(-1px)}
+
+/* social proof strip */
+.proof{display:flex;gap:32px;justify-content:center;flex-wrap:wrap;padding:32px 24px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:64px}
+.proof-stat .num{font-family:'Instrument Serif',serif;font-size:36px;line-height:1;color:var(--accent)}
+.proof-stat .lbl{font-size:12px;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+
+/* ─── WHAT YOU GET ─── */
+.section{max-width:960px;margin:0 auto;padding:0 24px 80px}
+.section-label{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--highlight);font-weight:500;margin-bottom:12px}
+.section-title{font-family:'Instrument Serif',serif;font-size:clamp(28px,5vw,44px);font-weight:400;line-height:1.15;margin-bottom:40px}
+.section-title em{font-style:italic;color:var(--ink3)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:16px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px}
+.card-icon{font-size:24px;margin-bottom:14px}
+.card-title{font-weight:500;font-size:15px;margin-bottom:6px}
+.card-body{font-size:14px;color:var(--ink2);line-height:1.6}
+
+/* ─── FORM ─── */
+#app{background:var(--surface);border:1px solid var(--border);border-radius:20px;max-width:760px;margin:0 auto 80px;overflow:hidden}
+.form-header{background:var(--accent);padding:32px 36px;color:#fff}
+.form-header h2{font-family:'Instrument Serif',serif;font-size:28px;font-weight:400;margin-bottom:6px}
+.form-header p{font-size:14px;opacity:.7}
+
+.form-body{padding:36px}
+.form-section-title{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px;margin-top:28px;font-weight:500}
+.form-section-title:first-child{margin-top:0}
+
+.field{margin-bottom:16px}
+.field label{display:block;font-size:13px;font-weight:500;color:var(--ink2);margin-bottom:6px}
+.field label .req{color:var(--highlight);margin-left:2px}
+.field label .opt{color:var(--ink3);font-weight:300;font-size:12px;margin-left:4px}
+
+input[type=text], input[type=password], select, textarea{
+  width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;
+  padding:11px 14px;font-family:'Geist',sans-serif;font-size:14px;font-weight:300;
+  color:var(--ink);outline:none;transition:border-color .2s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--highlight2)}
+input::placeholder,textarea::placeholder{color:var(--ink3)}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239a9690' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+textarea{resize:vertical;min-height:90px}
+
+/* upload */
+.upload-area{border:1.5px dashed var(--border);border-radius:10px;padding:36px 24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;position:relative}
+.upload-area:hover,.upload-area.drag{border-color:var(--highlight2);background:rgba(124,58,237,.03)}
+.upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.upload-area .u-icon{font-size:32px;margin-bottom:8px}
+.upload-area .u-title{font-size:15px;font-weight:500;margin-bottom:4px}
+.upload-area .u-hint{font-size:13px;color:var(--ink2)}
+.upload-area .u-formats{font-size:11px;color:var(--ink3);margin-top:6px}
+
+.file-chip{display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-top:8px}
+.file-chip .fc-info{flex:1}
+.file-chip .fc-name{font-size:14px;font-weight:500}
+.file-chip .fc-size{font-size:12px;color:var(--ink3)}
+.file-chip .fc-rm{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:18px;padding:2px 6px;transition:color .2s}
+.file-chip .fc-rm:hover{color:var(--danger)}
+
+/* api keys section */
+.api-section{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
+.api-section-title{font-size:12px;font-weight:500;color:var(--ink2);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.api-section-title::before{content:'🔑';font-size:14px}
+.api-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.api-grid{grid-template-columns:1fr}}
+.api-status{font-size:11px;margin-top:4px}
+.api-status.ok{color:var(--success)}
+.api-status.bad{color:var(--ink3)}
+
+.btn-submit{width:100%;background:var(--highlight);color:#fff;border:none;border-radius:10px;padding:16px;font-family:'Geist',sans-serif;font-size:16px;font-weight:500;cursor:pointer;letter-spacing:.01em;transition:opacity .2s,transform .1s;margin-top:8px}
+.btn-submit:hover:not(:disabled){opacity:.9;transform:translateY(-1px)}
+.btn-submit:disabled{opacity:.35;cursor:not-allowed;transform:none}
+
+/* ─── PROGRESS ─── */
+.progress{display:none;padding:32px 36px;border-top:1px solid var(--border)}
+.progress.show{display:block}
+.p-title{font-weight:500;margin-bottom:20px}
+.p-steps{display:flex;flex-direction:column;gap:0}
+.p-step{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)}
+.p-step:last-child{border-bottom:none}
+.p-dot{width:10px;height:10px;border-radius:50%;background:var(--border);flex-shrink:0;transition:background .3s}
+.p-dot.active{background:var(--highlight);box-shadow:0 0 12px rgba(255,107,53,.5);animation:pp 1s infinite}
+.p-dot.done{background:var(--success)}
+@keyframes pp{0%,100%{opacity:1}50%{opacity:.4}}
+.p-label{font-size:14px;color:var(--ink2)}
+.p-label.active{color:var(--ink);font-weight:500}
+.p-label.done{color:var(--ink3);text-decoration:line-through}
+
+/* ─── RESULTS ─── */
+.results{display:none;padding:0 36px 36px}
+.results.show{display:block}
+.r-divider{border:none;border-top:1px solid var(--border);margin:28px 0}
+.r-block{margin-bottom:28px}
+.r-block-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--highlight2);font-weight:500;margin-bottom:14px}
+
+/* scores */
+.score-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+@media(max-width:480px){.score-row{grid-template-columns:repeat(2,1fr)}}
+.score-card{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+.score-num{font-family:'Instrument Serif',serif;font-size:40px;line-height:1;margin-bottom:4px}
+.score-lbl{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em}
+.s-high{color:var(--success)}
+.s-mid{color:var(--warn)}
+.s-low{color:var(--danger)}
+
+.verdict-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:16px}
+.verdict-strong{background:#d1fae5;color:#065f46}
+.verdict-lean{background:#fef3c7;color:#92400e}
+.verdict-no{background:#fee2e2;color:#991b1b}
+
+.r-text{font-size:15px;color:var(--ink2);line-height:1.75;white-space:pre-wrap}
+
+.sw-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:520px){.sw-grid{grid-template-columns:1fr}}
+.sw-box{background:var(--bg);border-radius:10px;padding:16px}
+.sw-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;margin-bottom:10px}
+.sw-title.s{color:var(--success)}
+.sw-title.w{color:var(--danger)}
+.sw-list{list-style:none}
+.sw-list li{font-size:14px;color:var(--ink2);padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:8px}
+.sw-list li:last-child{border-bottom:none}
+.sw-list.s li::before{content:'↑';color:var(--success);flex-shrink:0}
+.sw-list.w li::before{content:'↓';color:var(--danger);flex-shrink:0}
+
+/* question breakdown */
+.q-list{display:flex;flex-direction:column;gap:12px}
+.q-item{background:var(--bg);border-left:3px solid var(--border);border-radius:0 8px 8px 0;padding:14px 16px}
+.q-item.strong{border-left-color:var(--success)}
+.q-item.lean{border-left-color:var(--warn)}
+.q-item.nohire{border-left-color:var(--danger)}
+.q-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
+.q-text{font-size:14px;font-weight:500;flex:1}
+.q-score{font-size:11px;font-weight:500;padding:3px 10px;border-radius:999px;white-space:nowrap;flex-shrink:0}
+.q-score.strong{background:#d1fae5;color:#065f46}
+.q-score.lean{background:#fef3c7;color:#92400e}
+.q-score.nohire{background:#fee2e2;color:#991b1b}
+.q-body{font-size:13px;color:var(--ink2);line-height:1.65}
+
+/* training plan */
+.train-list{display:flex;flex-direction:column;gap:14px}
+.train-item{background:var(--bg);border-radius:10px;padding:16px}
+.train-priority{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.train-priority.red{color:var(--danger)}
+.train-priority.yellow{color:var(--warn)}
+.train-priority.green{color:var(--success)}
+.train-q{font-size:14px;font-weight:500;margin-bottom:6px}
+.train-body{font-size:13px;color:var(--ink2);line-height:1.65}
+
+/* recommendations */
+.rec-ol{list-style:none;counter-reset:rec}
+.rec-ol li{counter-increment:rec;display:flex;gap:16px;padding:14px 0;border-bottom:1px solid var(--border);font-size:15px;color:var(--ink2);line-height:1.65}
+.rec-ol li:last-child{border-bottom:none}
+.rec-num{font-family:'Instrument Serif',serif;font-size:28px;color:var(--border);flex-shrink:0;line-height:1.2;width:28px}
+
+/* transcript */
+details{margin-top:8px}
+summary{cursor:pointer;font-size:12px;color:var(--ink3);letter-spacing:.08em;text-transform:uppercase;padding:6px 0;user-select:none;list-style:none}
+summary::before{content:'▸ '}
+details[open] summary::before{content:'▾ '}
+.transcript-box{margin-top:12px;background:var(--bg);border-radius:8px;padding:16px;font-size:13px;color:var(--ink2);line-height:1.8;max-height:320px;overflow-y:auto;white-space:pre-wrap}
+
+.error-box{background:#fff0f0;border:1px solid #fca5a5;border-radius:8px;padding:14px 18px;color:var(--danger);font-size:14px;margin:16px 0;display:none}
+.error-box.show{display:block}
+
+/* ─── FOOTER ─── */
+footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-logo">InterviewIQ</div>
+  <div class="nav-price">€5 per analysis</div>
+</div>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="badge"><span class="badge-dot"></span>Staff &amp; Senior PM bar</div>
+  <h1>Stop leaving interviews<br><em>empty-handed.</em></h1>
+  <p class="hero-sub">Find out exactly where you're losing the offer. Every filler word counted. Every skipped STAR stage flagged. Every answer scored against the actual Staff bar.</p>
+  <button class="hero-cta" onclick="document.getElementById('app').scrollIntoView({behavior:'smooth'})">Analyze my interview →</button>
+  <p style="margin-top:14px;font-size:13px;color:var(--ink3)">€5 per interview · no subscription</p>
+</section>
+
+<!-- UTP QUOTE -->
+<div style="max-width:960px;margin:0 auto;padding:0 24px 64px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 48px">
+    <p style="font-family:'Instrument Serif',serif;font-size:clamp(20px,3vw,28px);line-height:1.3;color:var(--ink);margin-bottom:20px">Upload 3 interviews.<br>See the patterns.<br><em style="color:var(--highlight)">Fix what actually matters.</em></p>
+    <p style="font-size:15px;color:var(--ink2);line-height:1.7;max-width:560px">With a coach, you get one session at a time. With InterviewIQ, you get the full picture — every word, every pattern, across every round. If you said <strong style="font-weight:500;color:var(--ink)">"like"</strong> 63 times, you'll know. Exactly 63.</p>
+  </div>
+</div>
+
+<!-- COMPARISON TABLE -->
+<div class="section">
+  <div class="section-label">why interviewiq</div>
+  <div class="section-title">Not your average <em>mock interview</em></div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border)">
+          <th style="width:38%;padding:10px 20px;text-align:left;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);font-weight:500"></th>
+          <th style="padding:10px 20px;text-align:left;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);font-weight:500">Human coach</th>
+          <th style="padding:10px 20px;text-align:left;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--highlight);font-weight:500">InterviewIQ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:12px 20px;font-size:13px;color:var(--ink2)">Cost per session</td>
+          <td style="padding:12px 20px;font-size:14px;color:var(--ink3)">$150–300/hr</td>
+          <td style="padding:12px 20px;font-size:14px;color:var(--ink);font-weight:500">€5 flat</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:12px 20px;font-size:13px;color:var(--ink2)">Filler word feedback</td>
+          <td style="padding:12px 20px;font-size:14px;color:var(--ink3)">"you say 'like' a lot"</td>
+          <td style="padding:12px 20px;font-size:14px;color:var(--ink)"><em>like</em>: 63×&nbsp; <em>um</em>: 41×&nbsp; <em>you know</em>: 28×</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:12px 20px;font-size:13px;color:var(--ink2)">Patterns across interviews</td>
+          <td style="padding:12px 20px;font-size:14px;color:var(--ink3)">✗ one session at a time</td>
+          <td style="padding:12px 20px;font-size:14px;color:var(--ink)">✓ upload 3, see the trend</td>
+        </tr>
+        <tr>
+          <td style="padding:12px 20px;font-size:13px;color:var(--ink2)">Available</td>
+          <td style="padding:12px 20px;font-size:14px;color:var(--ink3)">✗ scheduled, business hours</td>
+          <td style="padding:12px 20px;font-size:14px;color:var(--ink)">✓ any time, 2am included</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ WHAT YOU GET ═══ -->
+<div class="section">
+  <div class="section-label">output</div>
+  <div class="section-title">Everything your coach <em>wouldn't tell you</em></div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <div class="card-title">Full question log, zero skips</div>
+      <div class="card-body">Every meaningful question extracted and analyzed — if there were 20 questions, you get 20 blocks. No cherry-picking.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎯</div>
+      <div class="card-title">STAR / DIGS / CIRCLES mapping</div>
+      <div class="card-body">Each answer dissected stage by stage. Skipped stages flagged in caps: <em>R: SKIPPED — you never mentioned the result.</em></div>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <div class="card-title">Strong / Lean / No Hire per answer</div>
+      <div class="card-body">Scored against the actual Staff/Principal bar at FAANG. No fluffy praise. If it's a No Hire, you'll know why.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔢</div>
+      <div class="card-title">Exact filler word count</div>
+      <div class="card-body">Not "you say 'like' a lot" — but <em>like: 63×, um: 41×, you know: 28×</em>. The precise count you need to actually fix it.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🗺</div>
+      <div class="card-title">Prioritized training plan</div>
+      <div class="card-body">🔴 Fix before next round → 🟡 Raises your chances → 🟢 Polish. Know exactly what to practice tomorrow.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">✍️</div>
+      <div class="card-title">Model answer rewrite</div>
+      <div class="card-body">Your weakest answer rewritten at Staff level in clean English with the right structure. Copy. Practice. Ship.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🇬🇧</div>
+      <div class="card-title">English language audit</div>
+      <div class="card-body">Grammar errors, unnatural phrasing, vocabulary upgrades — all flagged with better alternatives.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="app" class="section" style="padding-bottom:80px">
+  <div class="section-label">Analyze now</div>
+  <div class="section-title">Upload your interview</div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden">
+
+    <!-- form header -->
+    <div class="form-header">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div>
+          <h2>Analyze your interview</h2>
+          <p>Fill in as much as you can — more context = better analysis</p>
+        </div>
+        <div style="background:var(--highlight);color:#fff;font-size:20px;font-weight:500;padding:8px 18px;border-radius:8px;white-space:nowrap;align-self:flex-start">€5</div>
+      </div>
+    </div>
+
+    <div class="form-body">
+
+      <!-- Required -->
+      <div class="form-section-title">Required</div>
+
+      <div class="field">
+        <label>Interview recording or transcript <span class="req">*</span></label>
+        <div class="upload-area" id="drop-zone">
+          <input type="file" id="audio-input" accept="audio/*,video/mp4,video/webm,.txt,.pdf" onchange="handleFile(this.files[0])">
+          <div class="u-icon">🎙</div>
+          <div class="u-title">Drop your file here or click to browse</div>
+          <div class="u-hint">Audio recording or plain text transcript</div>
+          <div class="u-formats">MP3 · MP4 · WAV · M4A · WEBM · TXT · up to 25 MB</div>
+        </div>
+        <div class="file-chip" id="file-chip" style="display:none">
+          <span style="font-size:22px">🎧</span>
+          <div class="fc-info">
+            <div class="fc-name" id="fc-name"></div>
+            <div class="fc-size" id="fc-size"></div>
+          </div>
+          <button class="fc-rm" onclick="removeFile()">✕</button>
+        </div>
+      </div>
+
+      <!-- Optional -->
+      <div class="form-section-title" style="margin-top:24px">Optional — improves analysis quality</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field">
+          <label>Interview type <span class="opt">(optional)</span></label>
+          <select id="interview-type">
+            <option value="">Select type...</option>
+            <option>Recruiter screen</option>
+            <option>Hiring manager</option>
+            <option>Behavioral / Leadership</option>
+            <option>Product sense</option>
+            <option>Technical / Execution</option>
+            <option>System design</option>
+            <option>Panel / Onsite</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Target level <span class="opt">(optional)</span></label>
+          <select id="target-level">
+            <option value="">Select level...</option>
+            <option>Junior PM</option>
+            <option>Mid-level PM</option>
+            <option>Senior PM</option>
+            <option>Staff PM</option>
+            <option>Principal PM</option>
+            <option>Director of Product</option>
+            <option>VP of Product</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Job description / role <span class="opt">(optional)</span></label>
+        <textarea id="job-desc" placeholder="Paste the job description or describe the role, level, and company..." rows="3"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Your resume <span class="opt">(optional)</span></label>
+        <textarea id="resume" placeholder="Paste your resume text or key bullet points relevant to this role..." rows="3"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Additional context <span class="opt">(optional)</span></label>
+        <textarea id="extra-context" placeholder="E.g. hiring manager's LinkedIn, what the recruiter told you about the role, previous round feedback, company values..." rows="3"></textarea>
+      </div>
+
+      <div class="error-box" id="error-box"></div>
+
+      <button class="btn-submit" id="run-btn" onclick="runAnalysis()" disabled>
+        Analyze My Interview →
+      </button>
+    </div>
+
+    <!-- progress -->
+    <div class="progress" id="progress">
+      <div class="p-title">Analyzing your interview...</div>
+      <div class="p-steps">
+        <div class="p-step"><div class="p-dot" id="d1"></div><div class="p-label" id="t1">Transcribing audio with Gemini...</div></div>
+        <div class="p-step"><div class="p-dot" id="d2"></div><div class="p-label" id="t2">Running question-by-question analysis with Claude...</div></div>
+        <div class="p-step"><div class="p-dot" id="d3"></div><div class="p-label" id="t3">Building your personalized training plan...</div></div>
+      </div>
+    </div>
+
+    <!-- results -->
+    <div class="results" id="results">
+      <hr class="r-divider" style="margin:0 36px 0">
+
+      <div style="padding:36px">
+        <!-- Overall scorecard -->
+        <div class="r-block">
+          <div class="r-block-label">Overall scorecard</div>
+          <div class="score-row" id="score-row"></div>
+          <div id="verdict-badge-wrap"></div>
+          <div class="r-text" id="summary-text"></div>
+        </div>
+
+        <!-- Strengths / weaknesses -->
+        <div class="r-block">
+          <div class="r-block-label">Strengths & growth areas</div>
+          <div class="sw-grid">
+            <div class="sw-box">
+              <div class="sw-title s">Strengths</div>
+              <ul class="sw-list s" id="strengths-list"></ul>
+            </div>
+            <div class="sw-box">
+              <div class="sw-title w">Growth areas</div>
+              <ul class="sw-list w" id="weaknesses-list"></ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Question breakdown -->
+        <div class="r-block">
+          <div class="r-block-label">Question breakdown</div>
+          <div class="q-list" id="q-list"></div>
+        </div>
+
+        <!-- Training plan -->
+        <div class="r-block">
+          <div class="r-block-label">Your training plan</div>
+          <div class="train-list" id="train-list"></div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="r-block">
+          <div class="r-block-label">Top recommendations</div>
+          <ol class="rec-ol" id="rec-list"></ol>
+        </div>
+
+        <!-- Transcript -->
+        <div class="r-block">
+          <div class="r-block-label">Full transcript</div>
+          <details>
+            <summary>Show transcript</summary>
+            <div class="transcript-box" id="transcript-box"></div>
+          </details>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>InterviewIQ · Staff &amp; Senior PM bar · Your data never leaves your browser · €5 per analysis</footer>
+
+<script>
+let currentFile = null;
+
+// drag & drop
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+
+function handleFile(f) {
+  currentFile = f;
+  document.getElementById('drop-zone').style.display = 'none';
+  document.getElementById('file-chip').style.display = 'flex';
+  document.getElementById('fc-name').textContent = f.name;
+  document.getElementById('fc-size').textContent = (f.size / 1024 / 1024).toFixed(2) + ' MB';
+  updateBtn();
+}
+function removeFile() {
+  currentFile = null;
+  document.getElementById('drop-zone').style.display = 'block';
+  document.getElementById('file-chip').style.display = 'none';
+  document.getElementById('audio-input').value = '';
+  updateBtn();
+}
+
+function updateBtn() {
+  document.getElementById('run-btn').disabled = !currentFile;
+}
+
+function setStep(n, state) {
+  document.getElementById('d' + n).className = 'p-dot ' + (state === 'active' ? 'active' : state === 'done' ? 'done' : '');
+  document.getElementById('t' + n).className = 'p-label ' + state;
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-box');
+  el.textContent = '⚠ ' + msg;
+  el.classList.add('show');
+}
+function hideError() { document.getElementById('error-box').classList.remove('show'); }
+
+async function toBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function scoreClass(n) { return n >= 8 ? 's-high' : n >= 5 ? 's-mid' : 's-low'; }
+function verdictClass(v) {
+  if (!v) return '';
+  const s = v.toLowerCase();
+  if (s.includes('strong')) return 'strong';
+  if (s.includes('lean')) return 'lean';
+  return 'nohire';
+}
+
+function renderResults(transcript, analysis, training) {
+  // Scores
+  const scores = [
+    { label: 'Overall', val: analysis.overall_score },
+    { label: 'Communication', val: analysis.communication_score },
+    { label: 'Content', val: analysis.content_score },
+    { label: 'Confidence', val: analysis.confidence_score },
+  ];
+  document.getElementById('score-row').innerHTML = scores.map(s =>
+    `<div class="score-card"><div class="score-num ${scoreClass(s.val)}">${s.val}</div><div class="score-lbl">${s.label}</div></div>`
+  ).join('');
+
+  // Verdict badge
+  const vc = verdictClass(analysis.overall_verdict);
+  document.getElementById('verdict-badge-wrap').innerHTML =
+    `<div class="verdict-badge verdict-${vc}">${analysis.overall_verdict || ''}</div>`;
+
+  document.getElementById('summary-text').textContent = analysis.summary || '';
+
+  // Strengths / weaknesses
+  document.getElementById('strengths-list').innerHTML = (analysis.strengths || []).map(s => `<li>${s}</li>`).join('');
+  document.getElementById('weaknesses-list').innerHTML = (analysis.weaknesses || []).map(s => `<li>${s}</li>`).join('');
+
+  // Question breakdown
+  document.getElementById('q-list').innerHTML = (analysis.questions || []).map(q => {
+    const vc = verdictClass(q.score);
+    return `<div class="q-item ${vc}">
+      <div class="q-header">
+        <div class="q-text">${q.question}</div>
+        <div class="q-score ${vc}">${q.score}</div>
+      </div>
+      <div class="q-body">
+        <strong style="font-weight:500;color:var(--ink2)">Type:</strong> ${q.type}<br>
+        <strong style="font-weight:500;color:var(--ink2)">Structure:</strong> ${q.structural_map}<br>
+        <strong style="font-weight:500;color:var(--ink2)">Critique:</strong> ${q.critique}<br>
+        <strong style="font-weight:500;color:var(--ink2)">Coach:</strong> ${q.coach_note}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Training plan
+  const priorityLabel = { critical: '🔴 Critical — fix before next round', important: '🟡 Important — raises your chances', polish: '🟢 Polish — nice to have' };
+  const priorityClass = { critical: 'red', important: 'yellow', polish: 'green' };
+  document.getElementById('train-list').innerHTML = (training.training_items || []).map(t => `
+    <div class="train-item">
+      <div class="train-priority ${priorityClass[t.priority] || 'green'}">${priorityLabel[t.priority] || t.priority}</div>
+      <div class="train-q">${t.question}</div>
+      <div class="train-body">
+        <strong style="font-weight:500">Problem:</strong> ${t.problem} (${t.frequency})<br>
+        <strong style="font-weight:500">Framework:</strong> ${t.framework}<br>
+        <strong style="font-weight:500">Action:</strong> ${t.action}
+      </div>
+    </div>`).join('');
+
+  // Recommendations
+  const allRecs = [
+    ...(training.top_recommendations || []),
+    ...(training.next_round_tips || [])
+  ];
+  document.getElementById('rec-list').innerHTML = allRecs.map(r =>
+    `<li><span class="rec-num">#</span><span>${r}</span></li>`
+  ).join('');
+
+  // Transcript
+  document.getElementById('transcript-box').textContent = transcript;
+
+  document.getElementById('results').classList.add('show');
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function runAnalysis() {
+  hideError();
+  const meta = {
+    interviewType: document.getElementById('interview-type').value,
+    targetLevel: document.getElementById('target-level').value,
+    jobDesc: document.getElementById('job-desc').value.trim(),
+    resume: document.getElementById('resume').value.trim(),
+    extraCtx: document.getElementById('extra-context').value.trim(),
+  };
+
+  document.getElementById('run-btn').disabled = true;
+  document.getElementById('progress').classList.add('show');
+  document.getElementById('results').classList.remove('show');
+  setStep(1, ''); setStep(2, ''); setStep(3, '');
+
+  try {
+    // Step 1: transcribe or read
+    setStep(1, 'active');
+    let transcript;
+    if (currentFile.type === 'text/plain' || currentFile.name.endsWith('.txt')) {
+      transcript = await currentFile.text();
+    } else {
+      const base64 = await toBase64(currentFile);
+      const r = await fetch('/api/transcribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ audioBase64: base64, mimeType: currentFile.type || 'audio/mpeg' })
+      });
+      if (!r.ok) { const e = await r.json(); throw new Error('Transcription: ' + (e.error || r.status)); }
+      const d = await r.json();
+      transcript = d.transcript;
+    }
+    setStep(1, 'done');
+
+    // Step 2: analyze
+    setStep(2, 'active');
+    const systemPrompt = `You are a Staff Product Manager with 15 years of FAANG experience, acting as a strict interview coach.
+Your evaluation bar is Staff/Principal PM at FAANG. Avoid empty praise. Even good answers must be improved.
+
+Grading standards:
+- No Hire (Junior/Mid): Execution-focused, no KPIs, no business context
+- Lean Hire (Senior): Clear STAR, product ownership, but impact limited to one team
+- Strong Hire (Staff/Principal): Organizational impact, high ambiguity, VP/C-level stakeholder management, systems thinking
+
+ANTI-HALLUCINATION: Analyze ONLY what was said. If a STAR stage is missing, write SKIPPED. Do not infer from resume.
+Respond ONLY in valid JSON, no markdown fences.`;
+
+    const userPrompt = `Analyze this PM interview transcript and return a JSON object.
+${meta.interviewType ? `Interview type: ${meta.interviewType}` : ''}
+${meta.targetLevel ? `Target level: ${meta.targetLevel}` : ''}
+${meta.jobDesc ? `Job description: ${meta.jobDesc}` : ''}
+${meta.resume ? `Candidate resume: ${meta.resume}` : ''}
+${meta.extraCtx ? `Additional context: ${meta.extraCtx}` : ''}
+
+TRANSCRIPT:
+${transcript}
+
+Return this exact JSON (all text in English):
+{
+  "overall_score": <1-10>,
+  "communication_score": <1-10>,
+  "content_score": <1-10>,
+  "confidence_score": <1-10>,
+  "overall_verdict": "Strong Hire" | "Lean Hire" | "No Hire",
+  "summary": "<2-3 sentence executive summary>",
+  "strengths": ["<s1>", "<s2>", "<s3>"],
+  "weaknesses": ["<w1>", "<w2>", "<w3>"],
+  "questions": [
+    {
+      "question": "<text>",
+      "type": "<Behavioral|Elevator Pitch|Case|Product Sense|Strategy|Other>",
+      "score": "Strong Hire" | "Lean Hire" | "No Hire",
+      "structural_map": "<STAR/DIGS mapping — flag SKIPPED stages in CAPS>",
+      "critique": "<brutal expert critique>",
+      "coach_note": "<recommended structure and specific fix>"
+    }
+  ],
+  "english_audit": {
+    "grammar_errors": ["<error and correction>"],
+    "unnatural_phrases": [{"original": "<phrase>", "better": "<improved>"}],
+    "vocabulary_upgrades": [{"original": "<word>", "better": "<professional>"}]
+  },
+  "weakest_answer_rewrite": {
+    "original_question": "<question>",
+    "rewritten_answer": "<model answer at Strong Hire level>"
+  }
+}`;
+
+    const ar = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: systemPrompt, messages: [{ role: 'user', content: userPrompt }], max_tokens: 4000 })
+    });
+    if (!ar.ok) { const e = await ar.json(); throw new Error('Analysis: ' + (e.error || ar.status)); }
+    const ad = await ar.json();
+    const analysisText = ad.content?.[0]?.text || '{}';
+    const analysis = JSON.parse(analysisText.replace(/```json|```/g, '').trim());
+    setStep(2, 'done');
+
+    // Step 3: training plan
+    setStep(3, 'active');
+    const trainPrompt = `You are a senior PM interview coach. Build a prioritized training plan based on this analysis.
+
+ANALYSIS:
+${JSON.stringify(analysis)}
+
+Return ONLY valid JSON:
+{
+  "training_items": [
+    {
+      "priority": "critical"|"important"|"polish",
+      "problem": "<one sentence>",
+      "frequency": "<how often>",
+      "question": "<question to re-practice>",
+      "framework": "<STAR|DIGS|CIRCLES|BUS|4P|Elevator Pitch>",
+      "action": "<exactly what to add, remove, or change>"
+    }
+  ],
+  "next_round_tips": ["<tip1>", "<tip2>", "<tip3>"],
+  "top_recommendations": ["<r1>", "<r2>", "<r3>", "<r4>", "<r5>"]
+}`;
+
+    const tr = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: [{ role: 'user', content: trainPrompt }], max_tokens: 2000 })
+    });
+    if (!tr.ok) { const e = await tr.json(); throw new Error('Training plan: ' + (e.error || tr.status)); }
+    const td = await tr.json();
+    const trainText = td.content?.[0]?.text || '{}';
+    const training = JSON.parse(trainText.replace(/```json|```/g, '').trim());
+    setStep(3, 'done');
+
+    renderResults(transcript, analysis, training);
+  } catch (err) {
+    showError(err.message);
+    console.error(err);
+  } finally {
+    document.getElementById('run-btn').disabled = false;
+  }
+}
+</script>
+</body>
+</html>
