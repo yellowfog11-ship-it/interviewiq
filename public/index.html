@@ -540,71 +540,13 @@ function verdictClass(v) {
 }
 
 function renderResults(transcript, analysis, training) {
-  // Scores
-  const scores = [
-    { label: 'Overall', val: analysis.overall_score },
-    { label: 'Communication', val: analysis.communication_score },
-    { label: 'Content', val: analysis.content_score },
-    { label: 'Confidence', val: analysis.confidence_score },
-  ];
-  document.getElementById('score-row').innerHTML = scores.map(s =>
-    `<div class="score-card"><div class="score-num ${scoreClass(s.val)}">${s.val}</div><div class="score-lbl">${s.label}</div></div>`
-  ).join('');
+  document.getElementById('score-row').innerHTML = `
+    <pre style="font-size:13px;color:var(--ink2);white-space:pre-wrap;overflow:auto">${JSON.stringify(analysis, null, 2)}</pre>`;
 
-  // Verdict badge
-  const vc = verdictClass(analysis.overall_verdict);
-  document.getElementById('verdict-badge-wrap').innerHTML =
-    `<div class="verdict-badge verdict-${vc}">${analysis.overall_verdict || ''}</div>`;
+  document.getElementById('train-list').innerHTML = `
+    <pre style="font-size:13px;color:var(--ink2);white-space:pre-wrap;overflow:auto">${JSON.stringify(training, null, 2)}</pre>`;
 
-  document.getElementById('summary-text').textContent = analysis.summary || '';
-
-  // Strengths / weaknesses
-  document.getElementById('strengths-list').innerHTML = (analysis.strengths || []).map(s => `<li>${s}</li>`).join('');
-  document.getElementById('weaknesses-list').innerHTML = (analysis.weaknesses || []).map(s => `<li>${s}</li>`).join('');
-
-  // Question breakdown
-  document.getElementById('q-list').innerHTML = (analysis.questions || []).map(q => {
-    const vc = verdictClass(q.score);
-    return `<div class="q-item ${vc}">
-      <div class="q-header">
-        <div class="q-text">${q.question}</div>
-        <div class="q-score ${vc}">${q.score}</div>
-      </div>
-      <div class="q-body">
-        <strong style="font-weight:500;color:var(--ink2)">Type:</strong> ${q.type}<br>
-        <strong style="font-weight:500;color:var(--ink2)">Structure:</strong> ${q.structural_map}<br>
-        <strong style="font-weight:500;color:var(--ink2)">Critique:</strong> ${q.critique}<br>
-        <strong style="font-weight:500;color:var(--ink2)">Coach:</strong> ${q.coach_note}
-      </div>
-    </div>`;
-  }).join('');
-
-  // Training plan
-  const priorityLabel = { critical: '🔴 Critical — fix before next round', important: '🟡 Important — raises your chances', polish: '🟢 Polish — nice to have' };
-  const priorityClass = { critical: 'red', important: 'yellow', polish: 'green' };
-  document.getElementById('train-list').innerHTML = (training.training_items || []).map(t => `
-    <div class="train-item">
-      <div class="train-priority ${priorityClass[t.priority] || 'green'}">${priorityLabel[t.priority] || t.priority}</div>
-      <div class="train-q">${t.question}</div>
-      <div class="train-body">
-        <strong style="font-weight:500">Problem:</strong> ${t.problem} (${t.frequency})<br>
-        <strong style="font-weight:500">Framework:</strong> ${t.framework}<br>
-        <strong style="font-weight:500">Action:</strong> ${t.action}
-      </div>
-    </div>`).join('');
-
-  // Recommendations
-  const allRecs = [
-    ...(training.top_recommendations || []),
-    ...(training.next_round_tips || [])
-  ];
-  document.getElementById('rec-list').innerHTML = allRecs.map(r =>
-    `<li><span class="rec-num">#</span><span>${r}</span></li>`
-  ).join('');
-
-  // Transcript
   document.getElementById('transcript-box').textContent = transcript;
-
   document.getElementById('results').classList.add('show');
   document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
