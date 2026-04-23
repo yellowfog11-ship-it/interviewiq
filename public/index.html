@@ -464,6 +464,18 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
           <ol class="rec-ol" id="rec-list"></ol>
         </div>
 
+        <!-- English audit -->
+        <div class="r-block">
+          <div class="r-block-label">English audit</div>
+          <div id="audit-content"></div>
+        </div>
+
+        <!-- Model answer rewrite -->
+        <div class="r-block">
+          <div class="r-block-label">Model answer rewrite</div>
+          <div id="rewrite-content" style="background:var(--bg);border-radius:10px;padding:20px"></div>
+        </div>
+
         <!-- Transcript -->
         <div class="r-block">
           <div class="r-block-label">Full transcript</div>
@@ -538,14 +550,132 @@ function verdictClass(v) {
   if (s.includes('lean')) return 'lean';
   return 'nohire';
 }
+function levelClass(l) {
+  if (!l) return 'green';
+  if (l === 'critical') return 'red';
+  if (l === 'important') return 'yellow';
+  return 'green';
+}
+function levelLabel(l) {
+  if (l === 'critical') return '🔴 Critical — fix before next round';
+  if (l === 'important') return '🟡 Important — raises your chances';
+  return '🟢 Polish — nice to have';
+}
 
 function renderResults(transcript, analysis, training) {
-  document.getElementById('score-row').innerHTML = `
-    <pre style="font-size:13px;color:var(--ink2);white-space:pre-wrap;overflow:auto">${JSON.stringify(analysis, null, 2)}</pre>`;
+  // Scores
+  const scores = [
+    { label: 'Overall', val: analysis.overall_score },
+    { label: 'Communication', val: analysis.communication_score },
+    { label: 'Content', val: analysis.content_score },
+    { label: 'Confidence', val: analysis.confidence_score },
+  ];
+  document.getElementById('score-row').innerHTML = scores.map(s =>
+    `<div class="score-card"><div class="score-num ${scoreClass(s.val)}">${s.val ?? '—'}</div><div class="score-lbl">${s.label}</div></div>`
+  ).join('');
 
-  document.getElementById('train-list').innerHTML = `
-    <pre style="font-size:13px;color:var(--ink2);white-space:pre-wrap;overflow:auto">${JSON.stringify(training, null, 2)}</pre>`;
+  // Verdict
+  const vc = verdictClass(analysis.overall_verdict);
+  document.getElementById('verdict-badge-wrap').innerHTML =
+    `<div class="verdict-badge verdict-${vc}">${analysis.overall_verdict || ''}</div>`;
+  document.getElementById('summary-text').textContent = analysis.summary || '';
 
+  // Strengths / weaknesses
+  document.getElementById('strengths-list').innerHTML = (analysis.strengths || []).map(s => `<li>${s}</li>`).join('');
+  document.getElementById('weaknesses-list').innerHTML = (analysis.weaknesses || []).map(s => `<li>${s}</li>`).join('');
+
+  // Question breakdown
+  document.getElementById('q-list').innerHTML = (analysis.questions || []).map(q => {
+    const v = verdictClass(q.score);
+    return `<div class="q-item ${v}">
+      <div class="q-header">
+        <div class="q-text">${q.question || ''}</div>
+        <div class="q-score ${v}">${q.score || ''}</div>
+      </div>
+      <div class="q-body">
+        <strong style="font-weight:500;color:var(--ink2)">Type:</strong> ${q.type || ''}<br>
+        <strong style="font-weight:500;color:var(--ink2)">Structure:</strong> ${q.structural_map || ''}<br>
+        <strong style="font-weight:500;color:var(--ink2)">Critique:</strong> ${q.critique || ''}<br>
+        <strong style="font-weight:500;color:var(--ink2)">Coach:</strong> ${q.coach_note || ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Weak areas
+  const weakAreas = training.weak_areas || [];
+  const weakAreasHtml = weakAreas.length ? `
+    <div class="r-block">
+      <div class="r-block-label">Weak areas</div>
+      <div class="train-list">${weakAreas.map(w => `
+        <div class="train-item">
+          <div class="train-priority ${levelClass(w.level)}">${levelLabel(w.level)}</div>
+          <div class="train-body">
+            <strong style="font-weight:500">Problem:</strong> ${w.problem || ''}<br>
+            <strong style="font-weight:500">Frequency:</strong> ${w.frequency || ''}
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  // Training items
+  document.getElementById('train-list').innerHTML = (training.training_items || []).map(t => `
+    <div class="train-item">
+      <div class="train-priority green">Priority ${t.priority ?? ''}</div>
+      <div class="train-q">${t.question || ''}</div>
+      <div class="train-body">
+        <strong style="font-weight:500">Framework:</strong> ${t.framework || ''}<br>
+        <strong style="font-weight:500">Add:</strong> ${t.what_to_add || ''}<br>
+        <strong style="font-weight:500">Remove:</strong> ${t.what_to_remove || ''}
+      </div>
+    </div>`).join('');
+
+  // Insert weak areas before training plan
+  const trainSection = document.getElementById('train-list').parentElement;
+  const existing = trainSection.querySelector('.weak-areas-block');
+  if (existing) existing.remove();
+  if (weakAreasHtml) {
+    const div = document.createElement('div');
+    div.className = 'weak-areas-block';
+    div.innerHTML = weakAreasHtml;
+    trainSection.insertBefore(div, trainSection.firstChild);
+  }
+
+  // English fixes + next round focus
+  const fixes = training.english_fixes || [];
+  const recs = training.next_round_focus || [];
+  document.getElementById('rec-list').innerHTML = [
+    ...fixes.map(f => `<li><span class="rec-num">#</span><span><strong style="font-weight:500">Fix:</strong> "${f.original}" → "${f.improved}"<br><em style="color:var(--ink3)">${f.rule || ''}</em></span></li>`),
+    ...recs.map(r => `<li><span class="rec-num">#</span><span>${r}</span></li>`)
+  ].join('');
+
+  // English audit from analysis
+  const audit = analysis.english_audit || {};
+  const fillerWords = audit.filler_words || {};
+  const fillerHtml = Object.keys(fillerWords).length
+    ? Object.entries(fillerWords).map(([w, c]) => `<span style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:13px;margin-right:6px"><em>${w}</em>: ${c}×</span>`).join('')
+    : '';
+
+  const auditHtml = `
+    ${fillerHtml ? `<div style="margin-bottom:12px">${fillerHtml}</div>` : ''}
+    ${(audit.grammar_errors || []).map(e => `<div style="font-size:13px;color:var(--ink2);padding:4px 0;border-bottom:1px solid var(--border)">✗ ${e}</div>`).join('')}
+    ${(audit.unnatural_phrases || []).map(p => `<div style="font-size:13px;color:var(--ink2);padding:4px 0;border-bottom:1px solid var(--border)">"${p.original}" → "${p.better}"</div>`).join('')}
+  `;
+  const auditEl = document.getElementById('audit-content');
+  if (auditEl) auditEl.innerHTML = auditHtml || '<p style="font-size:13px;color:var(--ink3)">No issues found.</p>';
+
+  // Weakest answer rewrite
+  const rewrite = analysis.weakest_answer_rewrite || {};
+  const rewriteEl = document.getElementById('rewrite-content');
+  if (rewriteEl && rewrite.original_question) {
+    rewriteEl.innerHTML = `
+      <div style="font-size:12px;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Question</div>
+      <div style="font-size:14px;font-weight:500;margin-bottom:16px">${rewrite.original_question}</div>
+      <div style="font-size:12px;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Model answer at Staff level</div>
+      <div style="font-size:14px;color:var(--ink2);line-height:1.75">${rewrite.rewritten_answer}</div>
+    `;
+  }
+
+  // Transcript
   document.getElementById('transcript-box').textContent = transcript;
   document.getElementById('results').classList.add('show');
   document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -587,62 +717,13 @@ async function runAnalysis() {
 
     // Step 2: analyze
     setStep(2, 'active');
-    const systemPrompt = `You are a Staff Product Manager with 15 years of FAANG experience, acting as a strict interview coach.
-Your evaluation bar is Staff/Principal PM at FAANG. Avoid empty praise. Even good answers must be improved.
-
-Grading standards:
-- No Hire (Junior/Mid): Execution-focused, no KPIs, no business context
-- Lean Hire (Senior): Clear STAR, product ownership, but impact limited to one team
-- Strong Hire (Staff/Principal): Organizational impact, high ambiguity, VP/C-level stakeholder management, systems thinking
-
-ANTI-HALLUCINATION: Analyze ONLY what was said. If a STAR stage is missing, write SKIPPED. Do not infer from resume.
-Respond ONLY in valid JSON, no markdown fences.`;
-
-    const userPrompt = `Analyze this PM interview transcript and return a JSON object.
-${meta.interviewType ? `Interview type: ${meta.interviewType}` : ''}
-${meta.targetLevel ? `Target level: ${meta.targetLevel}` : ''}
-${meta.jobDesc ? `Job description: ${meta.jobDesc}` : ''}
-${meta.resume ? `Candidate resume: ${meta.resume}` : ''}
-${meta.extraCtx ? `Additional context: ${meta.extraCtx}` : ''}
-
-TRANSCRIPT:
-${transcript}
-
-Return this exact JSON (all text in English):
-{
-  "overall_score": <1-10>,
-  "communication_score": <1-10>,
-  "content_score": <1-10>,
-  "confidence_score": <1-10>,
-  "overall_verdict": "Strong Hire" | "Lean Hire" | "No Hire",
-  "summary": "<2-3 sentence executive summary>",
-  "strengths": ["<s1>", "<s2>", "<s3>"],
-  "weaknesses": ["<w1>", "<w2>", "<w3>"],
-  "questions": [
-    {
-      "question": "<text>",
-      "type": "<Behavioral|Elevator Pitch|Case|Product Sense|Strategy|Other>",
-      "score": "Strong Hire" | "Lean Hire" | "No Hire",
-      "structural_map": "<STAR/DIGS mapping — flag SKIPPED stages in CAPS>",
-      "critique": "<brutal expert critique>",
-      "coach_note": "<recommended structure and specific fix>"
-    }
-  ],
-  "english_audit": {
-    "grammar_errors": ["<error and correction>"],
-    "unnatural_phrases": [{"original": "<phrase>", "better": "<improved>"}],
-    "vocabulary_upgrades": [{"original": "<word>", "better": "<professional>"}]
-  },
-  "weakest_answer_rewrite": {
-    "original_question": "<question>",
-    "rewritten_answer": "<model answer at Strong Hire level>"
-  }
-}`;
-
     const ar = await fetch('/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ system: systemPrompt, messages: [{ role: 'user', content: userPrompt }], max_tokens: 16000 })
+      body: JSON.stringify({
+        type: 'analysis',
+        payload: { transcript, ...meta }
+      })
     });
     if (!ar.ok) { const e = await ar.json(); throw new Error('Analysis: ' + (e.error || ar.status)); }
     const analysis = await ar.json();
@@ -650,22 +731,13 @@ Return this exact JSON (all text in English):
 
     // Step 3: training plan
     setStep(3, 'active');
-    const trainPrompt = `You are a senior PM interview coach. Build a prioritized training plan based on this analysis.
-
-ANALYSIS:
-${JSON.stringify(analysis)}
-
-Return ONLY valid JSON:
-{
-  "training_items": [...],
-  "next_round_tips": [...],
-  "top_recommendations": [...]
-}`;
-
     const tr = await fetch('/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [{ role: 'user', content: trainPrompt }], max_tokens: 4000 })
+      body: JSON.stringify({
+        type: 'training',
+        payload: { analysis }
+      })
     });
     if (!tr.ok) { const e = await tr.json(); throw new Error('Training plan: ' + (e.error || tr.status)); }
     const training = await tr.json();
