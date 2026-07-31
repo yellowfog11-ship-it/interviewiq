@@ -10,7 +10,7 @@ export default async function handler(req, res) {
       onBeforeGenerateToken: async () => ({
         allowedContentTypes: ['audio/*', 'video/mp4', 'video/webm', 'application/octet-stream'],
         addRandomSuffix: true,
-        maximumSizeInBytes: 75 * 1024 * 1024,
+        maximumSizeInBytes: 300 * 1024 * 1024,
       }),
       onUploadCompleted: async () => {},
     });
