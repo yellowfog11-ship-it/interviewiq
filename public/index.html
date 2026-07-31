@@ -342,7 +342,7 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
           <div class="u-icon">🎙</div>
           <div class="u-title">Drop your file here or click to browse</div>
           <div class="u-hint">Audio recording or plain text transcript</div>
-          <div class="u-formats">MP3 · MP4 · WAV · M4A · WEBM · TXT · up to 25 MB</div>
+          <div class="u-formats">MP3 · MP4 · WAV · M4A · WEBM · TXT · up to 75 MB</div>
         </div>
         <div class="file-chip" id="file-chip" style="display:none">
           <span style="font-size:22px">🎧</span>
@@ -533,15 +533,6 @@ function showError(msg) {
 }
 function hideError() { document.getElementById('error-box').classList.remove('show'); }
 
-async function toBase64(file) {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res(r.result.split(',')[1]);
-    r.onerror = rej;
-    r.readAsDataURL(file);
-  });
-}
-
 function scoreClass(n) { return n >= 8 ? 's-high' : n >= 5 ? 's-mid' : 's-low'; }
 function verdictClass(v) {
   if (!v) return '';
@@ -703,11 +694,15 @@ async function runAnalysis() {
     if (currentFile.type === 'text/plain' || currentFile.name.endsWith('.txt')) {
       transcript = await currentFile.text();
     } else {
-      const base64 = await toBase64(currentFile);
+      const { upload } = await import('https://esm.sh/@vercel/blob@2.6.1/client');
+      const blob = await upload(currentFile.name, currentFile, {
+        access: 'public',
+        handleUploadUrl: '/api/blob-upload',
+      });
       const r = await fetch('/api/transcribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ audioBase64: base64, mimeType: currentFile.type || 'audio/mpeg' })
+        body: JSON.stringify({ blobUrl: blob.url, mimeType: currentFile.type || 'audio/mpeg' })
       });
       if (!r.ok) { const e = await r.json(); throw new Error('Transcription: ' + (e.error || r.status)); }
       const d = await r.json();
