@@ -31,7 +31,16 @@ export default async function handler(req, res) {
     const data = await response.json();
     if (!response.ok) return res.status(500).json({ error: data.error?.message });
 
-    const transcript = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const candidate = data.candidates?.[0];
+    const transcript = (candidate?.content?.parts || []).map(p => p.text || '').join('').trim();
+
+    if (!transcript) {
+      console.error('Empty transcript. finishReason:', candidate?.finishReason, 'blockReason:', data.promptFeedback?.blockReason, JSON.stringify(data));
+      return res.status(500).json({
+        error: `Gemini returned no transcript (${candidate?.finishReason || data.promptFeedback?.blockReason || 'unknown reason'}). Try a different file or format.`
+      });
+    }
+
     res.json({ transcript });
   } finally {
     del(blobUrl).catch(() => {});
