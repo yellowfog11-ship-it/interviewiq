@@ -695,11 +695,16 @@ async function runAnalysis() {
     if (currentFile.type === 'text/plain' || currentFile.name.endsWith('.txt')) {
       transcript = await currentFile.text();
     } else {
-      const { upload } = await import('https://esm.sh/@vercel/blob@2.6.1/client');
-      const blob = await upload(currentFile.name, currentFile, {
-        access: 'public',
-        handleUploadUrl: '/api/blob-upload',
-      });
+      let blob;
+      try {
+        const { upload } = await import('https://esm.sh/@vercel/blob@2.6.1/client');
+        blob = await upload(currentFile.name, currentFile, {
+          access: 'public',
+          handleUploadUrl: '/api/blob-upload',
+        });
+      } catch (uploadErr) {
+        throw new Error('Upload: ' + uploadErr.message);
+      }
       const r = await fetch('/api/transcribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
