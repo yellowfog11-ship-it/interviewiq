@@ -1,6 +1,6 @@
 import { del } from '@vercel/blob';
 
-export const maxDuration = 300;
+export const maxDuration = 800;
 
 const MIME_MAP = {
   '.mp3': 'audio/mpeg',
@@ -104,7 +104,7 @@ async function requestTranscript(active, apiKey, temperature) {
         generationConfig: { temperature }
       })
     },
-    90000,
+    360000,
     `Gemini generateContent (temp=${temperature})`
   );
 
