@@ -1,4 +1,5 @@
 import { del } from '@vercel/blob';
+import { requireUser } from './_auth.js';
 
 export const maxDuration = 800;
 
@@ -118,6 +119,9 @@ async function requestTranscript(active, apiKey, temperature) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
+
+  const user = await requireUser(req);
+  if (!user) return res.status(401).json({ error: 'Sign in required' });
 
   const { blobUrl, mimeType: clientMimeType } = req.body;
   const apiKey = process.env.GEMINI_API_KEY;

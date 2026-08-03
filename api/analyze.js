@@ -1,5 +1,10 @@
+import { requireUser } from './_auth.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
+
+  const user = await requireUser(req);
+  if (!user) return res.status(401).json({ error: 'Sign in required' });
 
   const { type, payload } = req.body;
   const apiKey = process.env.ANTHROPIC_API_KEY;

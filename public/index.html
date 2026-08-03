@@ -5,7 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>InterviewIQ — AI Interview Coach for PM Candidates</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<style>.nav{display:flex;align-items:center;justify-content:space-between;max-width:960px;margin:0 auto;padding:20px 24px}.nav-logo{font-family:'Instrument Serif',serif;font-size:20px;color:var(--ink)}.nav-price{background:var(--accent);color:#fff;font-size:12px;font-weight:500;padding:6px 14px;border-radius:999px;letter-spacing:.03em}</style>
+<style>.nav{display:flex;align-items:center;justify-content:space-between;max-width:960px;margin:0 auto;padding:20px 24px}.nav-logo{font-family:'Instrument Serif',serif;font-size:20px;color:var(--ink)}.nav-price{background:var(--accent);color:#fff;font-size:12px;font-weight:500;padding:6px 14px;border-radius:999px;letter-spacing:.03em}.nav-right{display:flex;align-items:center;gap:12px}.nav-btn{background:none;border:1px solid var(--border);color:var(--ink);font-size:13px;font-weight:500;padding:8px 16px;border-radius:999px;cursor:pointer;font-family:'Geist',sans-serif}.nav-btn:hover{border-color:var(--ink3)}</style>
+<script async crossorigin="anonymous"
+  data-clerk-publishable-key="pk_test_c3RpcnJpbmctd2VldmlsLTI0LmNsZXJrLmFjY291bnRzLmRldiQ"
+  src="https://stirring-weevil-24.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js"
+  type="text/javascript"
+></script>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -211,7 +216,11 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
 <!-- NAV -->
 <div class="nav">
   <div class="nav-logo">InterviewIQ</div>
-  <div class="nav-price">€5 per analysis</div>
+  <div class="nav-right">
+    <div class="nav-price" id="nav-price">€2 per analysis · €20/mo</div>
+    <button class="nav-btn" id="signin-btn" style="display:none">Log in</button>
+    <div id="clerk-userbutton"></div>
+  </div>
 </div>
 
 <!-- ═══ HERO ═══ -->
@@ -492,10 +501,40 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
   </div>
 </div>
 
-<footer>InterviewIQ · Staff &amp; Senior PM bar · Your data never leaves your browser · €5 per analysis</footer>
+<footer>InterviewIQ · Staff &amp; Senior PM bar · €2 per analysis · €20/mo</footer>
 
 <script>
 let currentFile = null;
+
+// ─── Clerk auth ───
+window.addEventListener('load', async function () {
+  await Clerk.load();
+  renderAuthUI();
+  Clerk.addListener(renderAuthUI);
+});
+
+function renderAuthUI() {
+  const signinBtn = document.getElementById('signin-btn');
+  const userButtonEl = document.getElementById('clerk-userbutton');
+  if (Clerk.isSignedIn) {
+    signinBtn.style.display = 'none';
+    userButtonEl.innerHTML = '';
+    Clerk.mountUserButton(userButtonEl);
+  } else {
+    signinBtn.style.display = 'inline-block';
+    userButtonEl.innerHTML = '';
+  }
+}
+
+document.getElementById('signin-btn').addEventListener('click', () => {
+  Clerk.openSignIn();
+});
+
+async function authHeaders() {
+  if (!Clerk.session) return {};
+  const token = await Clerk.session.getToken();
+  return { Authorization: 'Bearer ' + token };
+}
 
 // drag & drop
 const dz = document.getElementById('drop-zone');
@@ -690,6 +729,9 @@ async function runAnalysis() {
   setStep(1, ''); setStep(2, ''); setStep(3, '');
 
   try {
+    if (!Clerk.isSignedIn) { Clerk.openSignIn(); throw new Error('Please sign in first.'); }
+    const auth = await authHeaders();
+
     // Step 1: transcribe or read
     setStep(1, 'active');
     let transcript;
@@ -702,13 +744,14 @@ async function runAnalysis() {
         blob = await upload(currentFile.name, currentFile, {
           access: 'public',
           handleUploadUrl: '/api/blob-upload',
+          clientPayload: JSON.stringify({ token: await Clerk.session.getToken() }),
         });
       } catch (uploadErr) {
         throw new Error('Upload: ' + uploadErr.message);
       }
       const r = await fetch('/api/transcribe', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...auth },
         body: JSON.stringify({ blobUrl: blob.url, mimeType: currentFile.type || 'audio/mpeg' })
       });
       if (!r.ok) { const e = await r.json(); throw new Error('Transcription: ' + (e.error || r.status)); }
@@ -721,7 +764,7 @@ async function runAnalysis() {
     setStep(2, 'active');
     const ar = await fetch('/api/analyze', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...auth },
       body: JSON.stringify({
         type: 'analysis',
         payload: { transcript, ...meta }
@@ -735,7 +778,7 @@ async function runAnalysis() {
     setStep(3, 'active');
     const tr = await fetch('/api/analyze', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...auth },
       body: JSON.stringify({
         type: 'training',
         payload: { analysis }
