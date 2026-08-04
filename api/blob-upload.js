@@ -1,5 +1,6 @@
 import { handleUpload } from '@vercel/blob/client';
 import { verifyClerkToken } from './_auth.js';
+import { getEntitlement, canRun } from './_entitlements.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -12,6 +13,9 @@ export default async function handler(req, res) {
         const { token } = JSON.parse(clientPayload || '{}');
         const user = await verifyClerkToken(token);
         if (!user) throw new Error('Sign in required');
+
+        const ent = await getEntitlement(user.id);
+        if (!canRun(ent).ok) throw new Error('Payment required');
 
         return {
           allowedContentTypes: ['audio/*', 'video/mp4', 'video/webm', 'application/octet-stream'],

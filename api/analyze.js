@@ -1,4 +1,6 @@
 import { requireUser } from './_auth.js';
+import { sql } from './_db.js';
+import { getEntitlement, canRun, consumeEntitlement } from './_entitlements.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -12,6 +14,11 @@ export default async function handler(req, res) {
   let system, userMsg, max_tokens;
 
   if (type === 'analysis') {
+    const ent = await getEntitlement(user.id);
+    if (!canRun(ent, payload.durationHours || 0).ok) {
+      return res.status(402).json({ error: 'Payment required' });
+    }
+
     const { transcript, interviewType, targetLevel, jobDesc, resume, extraCtx } = payload;
 
     system = `You are a Staff Product Manager with 15 years of FAANG experience acting as a strict interview coach. Your evaluation bar is Staff/Principal PM at FAANG.
@@ -152,6 +159,23 @@ Return ONLY this exact JSON (no markdown, no extra text):
         console.error('RAW RESPONSE:', raw);
         return res.status(500).json({ error: 'Could not parse Claude response' });
       }
+    }
+
+    if (type === 'training') {
+      const ent = await getEntitlement(user.id);
+      const decision = canRun(ent, payload.durationHours || 0);
+      if (!decision.ok) return res.status(402).json({ error: 'Payment required' });
+
+      const meta = payload.meta || {};
+      await sql`
+        insert into interviews
+          (user_id, interview_type, target_level, job_desc, resume, extra_context, transcript, analysis, training, duration_hours, charged_via)
+        values
+          (${user.id}, ${meta.interviewType || null}, ${meta.targetLevel || null}, ${meta.jobDesc || null},
+           ${meta.resume || null}, ${meta.extraCtx || null}, ${payload.transcript}, ${JSON.stringify(payload.analysis)},
+           ${JSON.stringify(parsed)}, ${payload.durationHours || null}, ${decision.via})
+      `;
+      await consumeEntitlement(user.id, decision.via, payload.durationHours || 0);
     }
 
     res.json(parsed);

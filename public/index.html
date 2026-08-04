@@ -222,6 +222,7 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
   <div class="nav-logo">InterviewIQ</div>
   <div class="nav-right">
     <div class="nav-price" id="nav-price">€2 per analysis · €20/mo</div>
+    <button class="nav-btn" id="history-btn" style="display:none" onclick="toggleHistory()">History</button>
     <button class="nav-btn" id="signin-btn" style="display:none">Log in</button>
     <div id="clerk-userbutton"></div>
   </div>
@@ -340,11 +341,27 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
           <h2>Analyze your interview</h2>
           <p>Fill in as much as you can — more context = better analysis</p>
         </div>
-        <div style="background:var(--highlight);color:#fff;font-size:20px;font-weight:500;padding:8px 18px;border-radius:8px;white-space:nowrap;align-self:flex-start">€5</div>
+        <div id="app-price-badge" style="background:var(--highlight);color:#fff;font-size:20px;font-weight:500;padding:8px 18px;border-radius:8px;white-space:nowrap;align-self:flex-start">€2</div>
       </div>
     </div>
 
-    <div class="form-body">
+    <!-- gate: not signed in -->
+    <div id="gate-signin" style="display:none;padding:48px 36px;text-align:center">
+      <p style="font-size:15px;color:var(--ink2);margin-bottom:16px">Sign in to analyze an interview and keep your results.</p>
+      <button class="hero-cta" onclick="Clerk.openSignIn()">Sign in / Sign up</button>
+    </div>
+
+    <!-- gate: signed in, no credits/subscription -->
+    <div id="gate-paywall" style="display:none;padding:48px 36px;text-align:center">
+      <p style="font-size:15px;color:var(--ink2);margin-bottom:24px">You're signed in — pick how you'd like to pay to run an analysis.</p>
+      <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+        <button class="hero-cta" onclick="startCheckout('onetime')">Pay €2 · one analysis</button>
+        <button class="hero-cta" style="background:var(--highlight2)" onclick="startCheckout('subscription')">Subscribe €20/mo</button>
+      </div>
+      <div class="error-box" id="paywall-error"></div>
+    </div>
+
+    <div class="form-body" id="form-body">
 
       <!-- Required -->
       <div class="form-section-title">Required</div>
@@ -505,6 +522,16 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
   </div>
 </div>
 
+<!-- ═══ HISTORY ═══ -->
+<div id="history-section" class="section" style="display:none;padding-bottom:80px">
+  <div class="section-label">Your history</div>
+  <div class="section-title">Past analyses</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:12px">
+    <div id="history-list"></div>
+    <p id="history-empty" style="display:none;padding:24px;text-align:center;color:var(--ink3);font-size:14px">No past analyses yet.</p>
+  </div>
+</div>
+
 <footer>InterviewIQ · Staff &amp; Senior PM bar · €2 per analysis · €20/mo</footer>
 
 <script>
@@ -520,13 +547,19 @@ window.addEventListener('load', async function () {
 function renderAuthUI() {
   const signinBtn = document.getElementById('signin-btn');
   const userButtonEl = document.getElementById('clerk-userbutton');
+  const historyBtn = document.getElementById('history-btn');
   if (Clerk.isSignedIn) {
     signinBtn.style.display = 'none';
+    historyBtn.style.display = 'inline-block';
     userButtonEl.innerHTML = '';
     Clerk.mountUserButton(userButtonEl);
+    refreshEntitlement();
   } else {
     signinBtn.style.display = 'inline-block';
+    historyBtn.style.display = 'none';
     userButtonEl.innerHTML = '';
+    document.getElementById('history-section').style.display = 'none';
+    refreshGateUI(null);
   }
 }
 
@@ -540,22 +573,130 @@ async function authHeaders() {
   return { Authorization: 'Bearer ' + token };
 }
 
+// ─── Entitlement / paywall gate ───
+async function refreshEntitlement() {
+  if (!Clerk.isSignedIn) return;
+  const r = await fetch('/api/entitlement', { headers: await authHeaders() });
+  if (!r.ok) return;
+  const ent = await r.json();
+  document.getElementById('nav-price').textContent = ent.credits > 0
+    ? `${ent.credits} credit${ent.credits === 1 ? '' : 's'}`
+    : ent.subscription.status === 'active' || ent.subscription.status === 'canceled'
+      ? `${ent.subscription.hoursUsed.toFixed(1)}/${ent.subscription.hoursLimit}h used`
+      : '€2 per analysis · €20/mo';
+  refreshGateUI(ent);
+}
+
+function refreshGateUI(ent) {
+  const signinGate = document.getElementById('gate-signin');
+  const paywallGate = document.getElementById('gate-paywall');
+  const formBody = document.getElementById('form-body');
+  if (!Clerk.isSignedIn) {
+    signinGate.style.display = 'block';
+    paywallGate.style.display = 'none';
+    formBody.style.display = 'none';
+  } else if (!ent || !ent.canRunAnalysis) {
+    signinGate.style.display = 'none';
+    paywallGate.style.display = 'block';
+    formBody.style.display = 'none';
+  } else {
+    signinGate.style.display = 'none';
+    paywallGate.style.display = 'none';
+    formBody.style.display = 'block';
+  }
+}
+
+async function startCheckout(plan) {
+  const r = await fetch('/api/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify({ plan })
+  });
+  if (!r.ok) {
+    const e = await r.json();
+    document.getElementById('paywall-error').textContent = '⚠ ' + (e.error || r.status);
+    document.getElementById('paywall-error').classList.add('show');
+    return;
+  }
+  const { url } = await r.json();
+  window.location.href = url;
+}
+
+// After returning from Polar checkout, poll until the webhook lands
+if (new URLSearchParams(location.search).get('checkout') === 'success') {
+  let attempts = 0;
+  const poll = setInterval(async () => {
+    attempts++;
+    await refreshEntitlement();
+    const r = await fetch('/api/entitlement', { headers: await authHeaders() });
+    const ent = r.ok ? await r.json() : null;
+    if ((ent && ent.canRunAnalysis) || attempts > 8) clearInterval(poll);
+  }, 2000);
+  history.replaceState(null, '', location.pathname);
+}
+
+// ─── History ───
+async function toggleHistory() {
+  const section = document.getElementById('history-section');
+  const showing = section.style.display !== 'none';
+  if (showing) { section.style.display = 'none'; return; }
+  document.getElementById('app').scrollIntoView({ behavior: 'smooth' });
+  section.style.display = 'block';
+  document.getElementById('results').classList.remove('show');
+  const r = await fetch('/api/history', { headers: await authHeaders() });
+  if (!r.ok) return;
+  const items = await r.json();
+  const list = document.getElementById('history-list');
+  document.getElementById('history-empty').style.display = items.length ? 'none' : 'block';
+  list.innerHTML = items.map(it => `
+    <div style="padding:16px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="loadHistoryItem(${it.id})">
+      <div>
+        <div style="font-weight:500;font-size:14px">${it.interview_type || 'Interview'} ${it.target_level ? '· ' + it.target_level : ''}</div>
+        <div style="font-size:12px;color:var(--ink3)">${new Date(it.created_at).toLocaleString()}</div>
+      </div>
+      <div class="verdict-badge verdict-${verdictClass(it.overall_verdict)}">${it.overall_verdict || ''} · ${it.overall_score || ''}</div>
+    </div>
+  `).join('');
+}
+
+async function loadHistoryItem(id) {
+  const r = await fetch('/api/history?id=' + id, { headers: await authHeaders() });
+  if (!r.ok) return;
+  const row = await r.json();
+  renderResults(row.transcript, row.analysis, row.training);
+  document.getElementById('history-section').style.display = 'none';
+}
+
 // drag & drop
 const dz = document.getElementById('drop-zone');
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
 dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
 
+let currentFileDurationHours = null;
+
 function handleFile(f) {
   currentFile = f;
+  currentFileDurationHours = null;
   document.getElementById('drop-zone').style.display = 'none';
   document.getElementById('file-chip').style.display = 'flex';
   document.getElementById('fc-name').textContent = f.name;
   document.getElementById('fc-size').textContent = (f.size / 1024 / 1024).toFixed(2) + ' MB';
   updateBtn();
+
+  if (f.type.startsWith('audio/') || f.type.startsWith('video/')) {
+    const probe = document.createElement(f.type.startsWith('video/') ? 'video' : 'audio');
+    probe.preload = 'metadata';
+    probe.onloadedmetadata = () => {
+      if (isFinite(probe.duration)) currentFileDurationHours = probe.duration / 3600;
+      URL.revokeObjectURL(probe.src);
+    };
+    probe.src = URL.createObjectURL(f);
+  }
 }
 function removeFile() {
   currentFile = null;
+  currentFileDurationHours = null;
   document.getElementById('drop-zone').style.display = 'block';
   document.getElementById('file-chip').style.display = 'none';
   document.getElementById('audio-input').value = '';
@@ -735,6 +876,7 @@ async function runAnalysis() {
   try {
     if (!Clerk.isSignedIn) { Clerk.openSignIn(); throw new Error('Please sign in first.'); }
     const auth = await authHeaders();
+    const durationHours = currentFileDurationHours;
 
     // Step 1: transcribe or read
     setStep(1, 'active');
@@ -758,6 +900,7 @@ async function runAnalysis() {
         headers: { 'Content-Type': 'application/json', ...auth },
         body: JSON.stringify({ blobUrl: blob.url, mimeType: currentFile.type || 'audio/mpeg' })
       });
+      if (r.status === 402) { refreshEntitlement(); throw new Error('Payment required — pick a plan below.'); }
       if (!r.ok) { const e = await r.json(); throw new Error('Transcription: ' + (e.error || r.status)); }
       const d = await r.json();
       transcript = d.transcript;
@@ -771,9 +914,10 @@ async function runAnalysis() {
       headers: { 'Content-Type': 'application/json', ...auth },
       body: JSON.stringify({
         type: 'analysis',
-        payload: { transcript, ...meta }
+        payload: { transcript, ...meta, durationHours }
       })
     });
+    if (ar.status === 402) { refreshEntitlement(); throw new Error('Payment required — pick a plan below.'); }
     if (!ar.ok) { const e = await ar.json(); throw new Error('Analysis: ' + (e.error || ar.status)); }
     const analysis = await ar.json();
     setStep(2, 'done');
@@ -785,14 +929,16 @@ async function runAnalysis() {
       headers: { 'Content-Type': 'application/json', ...auth },
       body: JSON.stringify({
         type: 'training',
-        payload: { analysis }
+        payload: { analysis, transcript, meta, durationHours }
       })
     });
+    if (tr.status === 402) { refreshEntitlement(); throw new Error('Payment required — pick a plan below.'); }
     if (!tr.ok) { const e = await tr.json(); throw new Error('Training plan: ' + (e.error || tr.status)); }
     const training = await tr.json();
     setStep(3, 'done');
 
     renderResults(transcript, analysis, training);
+    refreshEntitlement();
   } catch (err) {
     showError(err.message);
     console.error(err);
