@@ -875,7 +875,6 @@ async function runAnalysis() {
 
   try {
     if (!Clerk.isSignedIn) { Clerk.openSignIn(); throw new Error('Please sign in first.'); }
-    const auth = await authHeaders();
     const durationHours = currentFileDurationHours;
 
     // Step 1: transcribe or read
@@ -897,7 +896,7 @@ async function runAnalysis() {
       }
       const r = await fetch('/api/transcribe', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...auth },
+        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify({ blobUrl: blob.url, mimeType: currentFile.type || 'audio/mpeg' })
       });
       if (r.status === 402) { refreshEntitlement(); throw new Error('Payment required — pick a plan below.'); }
@@ -911,7 +910,7 @@ async function runAnalysis() {
     setStep(2, 'active');
     const ar = await fetch('/api/analyze', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...auth },
+      headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
       body: JSON.stringify({
         type: 'analysis',
         payload: { transcript, ...meta, durationHours }
@@ -926,7 +925,7 @@ async function runAnalysis() {
     setStep(3, 'active');
     const tr = await fetch('/api/analyze', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...auth },
+      headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
       body: JSON.stringify({
         type: 'training',
         payload: { analysis, transcript, meta, durationHours }
