@@ -386,13 +386,10 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
         </div>
       </div>
 
-      <!-- Optional -->
-      <div class="form-section-title" style="margin-top:24px">Optional — improves analysis quality</div>
-
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="field">
-          <label>Interview type <span class="opt">(optional)</span></label>
-          <select id="interview-type">
+          <label>Interview type <span class="req">*</span></label>
+          <select id="interview-type" onchange="toggleOtherField('interview-type')">
             <option value="">Select type...</option>
             <option>Recruiter screen</option>
             <option>Hiring manager</option>
@@ -401,11 +398,13 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
             <option>Technical / Execution</option>
             <option>System design</option>
             <option>Panel / Onsite</option>
+            <option>Other</option>
           </select>
+          <input type="text" id="interview-type-other" placeholder="Describe the interview type..." style="display:none;margin-top:8px" oninput="updateBtn()">
         </div>
         <div class="field">
-          <label>Target level <span class="opt">(optional)</span></label>
-          <select id="target-level">
+          <label>Target level <span class="req">*</span></label>
+          <select id="target-level" onchange="toggleOtherField('target-level')">
             <option value="">Select level...</option>
             <option>Junior PM</option>
             <option>Mid-level PM</option>
@@ -414,8 +413,13 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
             <option>Principal PM</option>
             <option>Director of Product</option>
             <option>VP of Product</option>
+            <option>Other</option>
           </select>
+          <input type="text" id="target-level-other" placeholder="Describe the target level..." style="display:none;margin-top:8px" oninput="updateBtn()">
         </div>
+
+      <!-- Optional -->
+      <div class="form-section-title" style="margin-top:24px;grid-column:1/-1">Optional — improves analysis quality</div>
       </div>
 
       <div class="field">
@@ -760,8 +764,24 @@ function removeFile() {
   updateBtn();
 }
 
+function toggleOtherField(fieldId) {
+  const select = document.getElementById(fieldId);
+  const otherInput = document.getElementById(fieldId + '-other');
+  otherInput.style.display = select.value === 'Other' ? 'block' : 'none';
+  if (select.value !== 'Other') otherInput.value = '';
+  updateBtn();
+}
+
+function resolveSelectValue(fieldId) {
+  const select = document.getElementById(fieldId);
+  if (select.value === 'Other') return document.getElementById(fieldId + '-other').value.trim();
+  return select.value;
+}
+
 function updateBtn() {
-  document.getElementById('run-btn').disabled = !currentFile;
+  const interviewType = resolveSelectValue('interview-type');
+  const targetLevel = resolveSelectValue('target-level');
+  document.getElementById('run-btn').disabled = !currentFile || !interviewType || !targetLevel;
 }
 
 function setStep(n, state) {
@@ -916,8 +936,8 @@ function renderResults(transcript, analysis, training) {
 async function runAnalysis() {
   hideError();
   const meta = {
-    interviewType: document.getElementById('interview-type').value,
-    targetLevel: document.getElementById('target-level').value,
+    interviewType: resolveSelectValue('interview-type'),
+    targetLevel: resolveSelectValue('target-level'),
     jobDesc: document.getElementById('job-desc').value.trim(),
     resume: document.getElementById('resume').value.trim(),
     extraCtx: document.getElementById('extra-context').value.trim(),
