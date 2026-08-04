@@ -47,6 +47,7 @@ ${transcript}
 
 Return ONLY this exact JSON (no markdown, no extra text):
 {
+  "title": "short descriptive title for this interview, e.g. company name + round type if mentioned ('Mastercard — Hiring Manager Round'), otherwise the main topic ('Mock Fintech App Case'). Max 6 words.",
   "overall_score": <integer 1-10>,
   "communication_score": <integer 1-10>,
   "content_score": <integer 1-10>,
@@ -169,9 +170,9 @@ Return ONLY this exact JSON (no markdown, no extra text):
       const meta = payload.meta || {};
       await sql`
         insert into interviews
-          (user_id, interview_type, target_level, job_desc, resume, extra_context, transcript, analysis, training, duration_hours, charged_via)
+          (user_id, title, interview_type, target_level, job_desc, resume, extra_context, transcript, analysis, training, duration_hours, charged_via)
         values
-          (${user.id}, ${meta.interviewType || null}, ${meta.targetLevel || null}, ${meta.jobDesc || null},
+          (${user.id}, ${payload.analysis?.title || null}, ${meta.interviewType || null}, ${meta.targetLevel || null}, ${meta.jobDesc || null},
            ${meta.resume || null}, ${meta.extraCtx || null}, ${payload.transcript}, ${JSON.stringify(payload.analysis)},
            ${JSON.stringify(parsed)}, ${payload.durationHours || null}, ${decision.via})
       `;

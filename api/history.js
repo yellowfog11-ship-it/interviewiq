@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   }
 
   const rows = await sql`
-    select id, created_at, interview_type, target_level,
+    select id, created_at, title, interview_type, target_level,
            analysis->>'overall_score' as overall_score,
            analysis->>'overall_verdict' as overall_verdict
     from interviews

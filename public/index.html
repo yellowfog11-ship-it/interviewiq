@@ -228,6 +228,7 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
   </div>
 </div>
 
+<div id="home-content">
 <!-- ═══ HERO ═══ -->
 <section class="hero">
   <div class="badge"><span class="badge-dot"></span>Staff &amp; Senior PM bar</div>
@@ -521,9 +522,11 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
 
   </div>
 </div>
+</div><!-- /home-content -->
 
 <!-- ═══ HISTORY ═══ -->
 <div id="history-section" class="section" style="display:none;padding-bottom:80px">
+  <button class="nav-btn" onclick="closeHistory()" style="margin-bottom:20px">← Back</button>
   <div class="section-label">Your history</div>
   <div class="section-title">Past analyses</div>
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:12px">
@@ -566,6 +569,7 @@ function renderAuthUI() {
       userButtonMounted = false;
     }
     document.getElementById('history-section').style.display = 'none';
+    document.getElementById('home-content').style.display = 'block';
     refreshGateUI(null);
   }
 }
@@ -644,34 +648,40 @@ if (new URLSearchParams(location.search).get('checkout') === 'success') {
 
 // ─── History ───
 async function toggleHistory() {
-  const section = document.getElementById('history-section');
-  const showing = section.style.display !== 'none';
-  if (showing) { section.style.display = 'none'; return; }
-  document.getElementById('app').scrollIntoView({ behavior: 'smooth' });
-  section.style.display = 'block';
-  document.getElementById('results').classList.remove('show');
-  const r = await fetch('/api/history', { headers: await authHeaders() });
-  if (!r.ok) return;
-  const items = await r.json();
+  document.getElementById('home-content').style.display = 'none';
+  document.getElementById('history-section').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
   const list = document.getElementById('history-list');
+  list.innerHTML = '<p style="padding:24px;text-align:center;color:var(--ink3);font-size:14px">Loading…</p>';
+  document.getElementById('history-empty').style.display = 'none';
+
+  const r = await fetch('/api/history', { headers: await authHeaders() });
+  if (!r.ok) { list.innerHTML = ''; return; }
+  const items = await r.json();
   document.getElementById('history-empty').style.display = items.length ? 'none' : 'block';
   list.innerHTML = items.map(it => `
-    <div style="padding:16px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="loadHistoryItem(${it.id})">
+    <div style="padding:16px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="loadHistoryItem(${it.id})">
       <div>
-        <div style="font-weight:500;font-size:14px">${it.interview_type || 'Interview'} ${it.target_level ? '· ' + it.target_level : ''}</div>
+        <div style="font-weight:500;font-size:14px">${it.title || it.interview_type || 'Interview'}</div>
         <div style="font-size:12px;color:var(--ink3)">${new Date(it.created_at).toLocaleString()}</div>
       </div>
-      <div class="verdict-badge verdict-${verdictClass(it.overall_verdict)}">${it.overall_verdict || ''} · ${it.overall_score || ''}</div>
+      <div class="verdict-badge verdict-${verdictClass(it.overall_verdict)}" style="flex-shrink:0">${it.overall_verdict || ''} · ${it.overall_score || ''}</div>
     </div>
   `).join('');
+}
+
+function closeHistory() {
+  document.getElementById('history-section').style.display = 'none';
+  document.getElementById('home-content').style.display = 'block';
 }
 
 async function loadHistoryItem(id) {
   const r = await fetch('/api/history?id=' + id, { headers: await authHeaders() });
   if (!r.ok) return;
   const row = await r.json();
+  closeHistory();
   renderResults(row.transcript, row.analysis, row.training);
-  document.getElementById('history-section').style.display = 'none';
 }
 
 // drag & drop
