@@ -238,6 +238,8 @@ textarea{resize:vertical;min-height:90px}
 .dim-tag.watch{background:var(--band-amber-bg);color:var(--band-amber-text)}
 .dim-tag.concern{background:var(--band-red-bg);color:var(--band-red-text)}
 .dim-tag.standout{background:rgba(124,58,237,.12);color:var(--highlight2)}
+.dim-bar-track{height:5px;border-radius:3px;background:var(--border);overflow:hidden;margin-bottom:10px}
+.dim-bar-fill{height:5px;border-radius:3px;transition:width .3s ease,background-color .3s ease}
 .dim-eval{font-size:13px;color:var(--ink2);line-height:1.65}
 
 /* persistent gaps */
@@ -877,6 +879,26 @@ function tagTypeClass(t) {
   return 'watch';
 }
 
+// Continuous red -> amber -> green gradient for dimension bar fills.
+// Badges/tags stay on the 3-bucket bandOf() system above -- only the bar fill uses this.
+const DIM_BAR_RED = [226, 75, 74];   // #E24B4A
+const DIM_BAR_AMBER = [186, 117, 23]; // #BA7517
+const DIM_BAR_GREEN = [99, 153, 34];  // #639922
+
+function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+function lerp(a, b, t) { return Math.round(a + (b - a) * t); }
+
+function dimensionBarColor(score) {
+  const s = clamp(score, 1, 10);
+  const [from, to, t] = s <= 5.5
+    ? [DIM_BAR_RED, DIM_BAR_AMBER, (s - 1) / (5.5 - 1)]
+    : [DIM_BAR_AMBER, DIM_BAR_GREEN, (s - 5.5) / (10 - 5.5)];
+  const r = lerp(from[0], to[0], t);
+  const g = lerp(from[1], to[1], t);
+  const b = lerp(from[2], to[2], t);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 function renderResults(transcript, analysis, training) {
   // Key milestone
   const milestoneEl = document.getElementById('milestone-banner');
@@ -927,13 +949,18 @@ function renderResults(transcript, analysis, training) {
 
   // Dimension cards
   document.getElementById('dim-list').innerHTML = (analysis.dimensions || []).map(d => {
-    const b = bandOf(d.score);
+    const hasScore = typeof d.score === 'number' && !isNaN(d.score);
+    const b = hasScore ? bandOf(d.score) : 'amber';
     const tag = d.tag ? `<span class="dim-tag ${tagTypeClass(d.tag_type)}">${d.tag}</span>` : '';
+    const bar = hasScore
+      ? `<div class="dim-bar-track"><div class="dim-bar-fill" style="width:${clamp(d.score, 1, 10) / 10 * 100}%;background-color:${dimensionBarColor(d.score)}"></div></div>`
+      : '';
     return `<div class="dim-card">
       <div class="dim-header">
         <div class="dim-name-wrap"><span class="dim-name">${d.name || d.key || ''}</span>${tag}</div>
-        <div class="dim-score band-${b}">${d.score ?? '—'}</div>
+        <div class="dim-score band-${b}">${hasScore ? d.score : '—'}</div>
       </div>
+      ${bar}
       <div class="dim-eval">${d.evaluation || ''}</div>
     </div>`;
   }).join('');
