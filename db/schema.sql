@@ -24,6 +24,7 @@ create table if not exists interviews (
   interview_type  text,
   target_level    text,
   job_desc        text,
+  company_values  text,
   resume          text,
   extra_context   text,
   transcript      text not null,
@@ -34,6 +35,7 @@ create table if not exists interviews (
 );
 create index if not exists interviews_user_created_idx on interviews(user_id, created_at desc);
 alter table interviews add column if not exists title text;
+alter table interviews add column if not exists company_values text;
 
 create table if not exists polar_webhook_events (
   id           text primary key,       -- Polar event id, for idempotency

@@ -174,15 +174,15 @@ textarea{resize:vertical;min-height:90px}
 /* question breakdown */
 .q-list{display:flex;flex-direction:column;gap:12px}
 .q-item{background:var(--bg);border-left:3px solid var(--border);border-radius:0 8px 8px 0;padding:14px 16px}
-.q-item.strong{border-left-color:var(--success)}
-.q-item.lean{border-left-color:var(--warn)}
-.q-item.nohire{border-left-color:var(--danger)}
+.q-item.green{border-left-color:var(--band-green)}
+.q-item.amber{border-left-color:var(--band-amber)}
+.q-item.red{border-left-color:var(--band-red)}
 .q-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
 .q-text{font-size:14px;font-weight:500;flex:1}
 .q-score{font-size:11px;font-weight:500;padding:3px 10px;border-radius:999px;white-space:nowrap;flex-shrink:0}
-.q-score.strong{background:#d1fae5;color:#065f46}
-.q-score.lean{background:#fef3c7;color:#92400e}
-.q-score.nohire{background:#fee2e2;color:#991b1b}
+.q-score.green{background:var(--band-green-bg);color:var(--band-green-text)}
+.q-score.amber{background:var(--band-amber-bg);color:var(--band-amber-text)}
+.q-score.red{background:var(--band-red-bg);color:var(--band-red-text)}
 .q-body{font-size:13px;color:var(--ink2);line-height:1.65}
 
 /* training plan */
@@ -200,6 +200,56 @@ textarea{resize:vertical;min-height:90px}
 .rec-ol li{counter-increment:rec;display:flex;gap:16px;padding:14px 0;border-bottom:1px solid var(--border);font-size:15px;color:var(--ink2);line-height:1.65}
 .rec-ol li:last-child{border-bottom:none}
 .rec-num{font-family:'Instrument Serif',serif;font-size:28px;color:var(--border);flex-shrink:0;line-height:1.2;width:28px}
+
+/* score-band colors (fixed thresholds: >=8 green, 6-7.9 amber, <6 red) */
+:root{
+  --band-green:#639922; --band-green-bg:#EAF3DE; --band-green-text:#3B6D11;
+  --band-amber:#BA7517; --band-amber-bg:#FAEEDA; --band-amber-text:#633806;
+  --band-red:#E24B4A; --band-red-bg:#FAECE7; --band-red-text:#993C1D;
+}
+.band-green{color:var(--band-green)}
+.band-amber{color:var(--band-amber)}
+.band-red{color:var(--band-red)}
+.band-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:16px}
+.band-badge.band-green{background:var(--band-green-bg);color:var(--band-green-text)}
+.band-badge.band-amber{background:var(--band-amber-bg);color:var(--band-amber-text)}
+.band-badge.band-red{background:var(--band-red-bg);color:var(--band-red-text)}
+
+/* milestone banner */
+.milestone-banner{background:var(--band-green-bg);color:var(--band-green-text);border-radius:10px;padding:14px 18px;font-size:14px;font-weight:500;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+
+/* progress chart (session trend sparkline) */
+.progress-chart{display:flex;align-items:flex-end;gap:8px;height:90px;margin-top:20px;padding-top:8px;border-top:1px solid var(--border)}
+.pc-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;height:100%;justify-content:flex-end;min-width:0}
+.pc-bar{width:100%;max-width:28px;border-radius:4px 4px 0 0}
+.pc-bar.current{outline:2px solid var(--ink);outline-offset:2px}
+.pc-score{font-size:11px;font-weight:500;color:var(--ink2)}
+.pc-label{font-size:9px;color:var(--ink3);text-align:center;max-width:56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* dimension cards */
+.dim-list{display:flex;flex-direction:column;gap:12px}
+.dim-card{background:var(--bg);border-radius:10px;padding:16px}
+.dim-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+.dim-name-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dim-name{font-size:14px;font-weight:500}
+.dim-score{font-family:'Instrument Serif',serif;font-size:26px;flex-shrink:0}
+.dim-tag{font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:999px}
+.dim-tag.positive{background:var(--band-green-bg);color:var(--band-green-text)}
+.dim-tag.watch{background:var(--band-amber-bg);color:var(--band-amber-text)}
+.dim-tag.concern{background:var(--band-red-bg);color:var(--band-red-text)}
+.dim-tag.standout{background:rgba(124,58,237,.12);color:var(--highlight2)}
+.dim-eval{font-size:13px;color:var(--ink2);line-height:1.65}
+
+/* persistent gaps */
+.gap-list{display:flex;flex-direction:column;gap:10px}
+.gap-item{background:var(--bg);border-radius:8px;padding:12px 14px}
+.gap-pattern{font-weight:500;font-size:13px;color:var(--ink);margin-bottom:2px}
+.gap-evidence{font-size:13px;color:var(--ink2)}
+
+/* structural map (situation/task/action/result) */
+.smap{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:13px;color:var(--ink2);margin-bottom:8px}
+.smap dt{font-weight:500;color:var(--ink3);text-transform:uppercase;font-size:10px;letter-spacing:.06em;padding-top:2px}
+.smap dd{margin:0}
 
 /* transcript */
 details{margin-top:8px}
@@ -429,13 +479,18 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
       </div>
 
       <div class="field">
+        <label>Company values <span class="opt">(optional)</span></label>
+        <textarea id="company-values" placeholder="Paste the company's stated values or culture principles, e.g. 'Customer obsession, Bias for action, Ownership'..." rows="3"></textarea>
+      </div>
+
+      <div class="field">
         <label>Your resume <span class="opt">(optional)</span></label>
         <textarea id="resume" placeholder="Paste your resume text or key bullet points relevant to this role..." rows="3"></textarea>
       </div>
 
       <div class="field">
         <label>Additional context <span class="opt">(optional)</span></label>
-        <textarea id="extra-context" placeholder="E.g. hiring manager's LinkedIn, what the recruiter told you about the role, previous round feedback, company values..." rows="3"></textarea>
+        <textarea id="extra-context" placeholder="E.g. hiring manager's LinkedIn, what the recruiter told you about the role, previous round feedback..." rows="3"></textarea>
       </div>
 
       <div class="error-box" id="error-box"></div>
@@ -465,12 +520,31 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
   <div id="results-card" style="max-width:960px;margin:20px auto 80px;background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden">
     <div class="results show" id="results">
       <div style="padding:36px">
+        <!-- Key milestone -->
+        <div class="milestone-banner" id="milestone-banner" style="display:none"></div>
+
         <!-- Overall scorecard -->
         <div class="r-block">
           <div class="r-block-label">Overall scorecard</div>
-          <div class="score-row" id="score-row"></div>
-          <div id="verdict-badge-wrap"></div>
+          <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:8px">
+            <div class="score-num" id="overall-score-num"></div>
+            <div id="verdict-badge-wrap"></div>
+          </div>
           <div class="r-text" id="summary-text"></div>
+          <div class="r-text" id="progress-summary-text" style="display:none;font-style:italic;color:var(--ink3);font-size:13px;margin-top:6px"></div>
+          <div class="progress-chart" id="progress-chart" style="display:none"></div>
+        </div>
+
+        <!-- Evaluation dimensions -->
+        <div class="r-block">
+          <div class="r-block-label">Evaluation dimensions</div>
+          <div class="dim-list" id="dim-list"></div>
+        </div>
+
+        <!-- Persistent gaps -->
+        <div class="r-block" id="gaps-block" style="display:none">
+          <div class="r-block-label">Persistent patterns</div>
+          <div class="gap-list" id="gap-list"></div>
         </div>
 
         <!-- Strengths / weaknesses -->
@@ -683,7 +757,7 @@ async function loadHistoryList() {
           <div style="font-weight:500;font-size:14px">${it.title || it.interview_type || 'Interview'}</div>
           <div style="font-size:12px;color:var(--ink3)">${new Date(it.created_at).toLocaleString()}</div>
         </div>
-        <div class="verdict-badge verdict-${verdictClass(it.overall_verdict)}" style="flex-shrink:0">${it.overall_verdict || ''} · ${it.overall_score || ''}</div>
+        <div class="band-badge band-${it.verdict_color || 'amber'}" style="flex-shrink:0;margin-bottom:0">${it.verdict_label || ''} · ${it.overall_score || ''}</div>
       </div>
       <div class="hist-detail" id="hist-detail-${it.id}" style="display:none;border-top:1px solid var(--border)"></div>
     </div>
@@ -797,43 +871,86 @@ function showError(msg) {
 }
 function hideError() { document.getElementById('error-box').classList.remove('show'); }
 
-function scoreClass(n) { return n >= 8 ? 's-high' : n >= 5 ? 's-mid' : 's-low'; }
-function verdictClass(v) {
-  if (!v) return '';
-  const s = v.toLowerCase();
-  if (s.includes('strong')) return 'strong';
-  if (s.includes('lean')) return 'lean';
-  return 'nohire';
-}
-function levelClass(l) {
-  if (!l) return 'green';
-  if (l === 'critical') return 'red';
-  if (l === 'important') return 'yellow';
-  return 'green';
-}
-function levelLabel(l) {
-  if (l === 'critical') return '🔴 Critical — fix before next round';
-  if (l === 'important') return '🟡 Important — raises your chances';
-  return '🟢 Polish — nice to have';
+function bandOf(n) { return n >= 8 ? 'green' : n >= 6 ? 'amber' : 'red'; }
+function tagTypeClass(t) {
+  if (t === 'positive' || t === 'watch' || t === 'concern' || t === 'standout') return t;
+  return 'watch';
 }
 
 function renderResults(transcript, analysis, training) {
-  // Scores
-  const scores = [
-    { label: 'Overall', val: analysis.overall_score },
-    { label: 'Communication', val: analysis.communication_score },
-    { label: 'Content', val: analysis.content_score },
-    { label: 'Confidence', val: analysis.confidence_score },
-  ];
-  document.getElementById('score-row').innerHTML = scores.map(s =>
-    `<div class="score-card"><div class="score-num ${scoreClass(s.val)}">${s.val ?? '—'}</div><div class="score-lbl">${s.label}</div></div>`
-  ).join('');
+  // Key milestone
+  const milestoneEl = document.getElementById('milestone-banner');
+  if (analysis.key_milestone) {
+    milestoneEl.style.display = 'flex';
+    milestoneEl.textContent = '🎉 ' + analysis.key_milestone;
+  } else {
+    milestoneEl.style.display = 'none';
+  }
 
-  // Verdict
-  const vc = verdictClass(analysis.overall_verdict);
+  // Overall score + verdict
+  const band = analysis.verdict?.color || bandOf(analysis.overall_score);
+  document.getElementById('overall-score-num').className = 'score-num band-' + band;
+  document.getElementById('overall-score-num').textContent = analysis.overall_score ?? '—';
   document.getElementById('verdict-badge-wrap').innerHTML =
-    `<div class="verdict-badge verdict-${vc}">${analysis.overall_verdict || ''}</div>`;
+    `<div class="band-badge band-${band}">${analysis.verdict?.label || ''}</div>`;
   document.getElementById('summary-text').textContent = analysis.summary || '';
+
+  const progressEl = document.getElementById('progress-summary-text');
+  if (analysis.progress_summary) {
+    progressEl.style.display = 'block';
+    progressEl.textContent = analysis.progress_summary;
+  } else {
+    progressEl.style.display = 'none';
+  }
+
+  // Progress chart (past sessions + this one, current bolded)
+  const chartEl = document.getElementById('progress-chart');
+  const history = analysis.history || [];
+  if (history.length > 0) {
+    const points = [...history, { session_name: 'This session', overall_score: analysis.overall_score, current: true }];
+    const max = 10;
+    chartEl.style.display = 'flex';
+    chartEl.innerHTML = points.map(p => {
+      const h = Math.max(6, ((p.overall_score ?? 0) / max) * 100);
+      const b = bandOf(p.overall_score ?? 0);
+      const label = p.current ? 'Now' : (p.session_name || '').slice(0, 14);
+      return `<div class="pc-bar-wrap">
+        <div class="pc-score">${p.overall_score ?? '—'}</div>
+        <div class="pc-bar band-bg-${b} ${p.current ? 'current' : ''}" style="height:${h}%;background:var(--band-${b})" title="${p.session_name || ''}"></div>
+        <div class="pc-label">${label}</div>
+      </div>`;
+    }).join('');
+  } else {
+    chartEl.style.display = 'none';
+    chartEl.innerHTML = '';
+  }
+
+  // Dimension cards
+  document.getElementById('dim-list').innerHTML = (analysis.dimensions || []).map(d => {
+    const b = bandOf(d.score);
+    const tag = d.tag ? `<span class="dim-tag ${tagTypeClass(d.tag_type)}">${d.tag}</span>` : '';
+    return `<div class="dim-card">
+      <div class="dim-header">
+        <div class="dim-name-wrap"><span class="dim-name">${d.name || d.key || ''}</span>${tag}</div>
+        <div class="dim-score band-${b}">${d.score ?? '—'}</div>
+      </div>
+      <div class="dim-eval">${d.evaluation || ''}</div>
+    </div>`;
+  }).join('');
+
+  // Persistent gaps
+  const gaps = analysis.persistent_gaps || [];
+  const gapsBlock = document.getElementById('gaps-block');
+  if (gaps.length > 0) {
+    gapsBlock.style.display = 'block';
+    document.getElementById('gap-list').innerHTML = gaps.map(g => `
+      <div class="gap-item">
+        <div class="gap-pattern">${g.pattern || ''}</div>
+        <div class="gap-evidence">${g.evidence || ''}</div>
+      </div>`).join('');
+  } else {
+    gapsBlock.style.display = 'none';
+  }
 
   // Strengths / weaknesses
   document.getElementById('strengths-list').innerHTML = (analysis.strengths || []).map(s => `<li>${s}</li>`).join('');
@@ -841,15 +958,21 @@ function renderResults(transcript, analysis, training) {
 
   // Question breakdown
   document.getElementById('q-list').innerHTML = (analysis.questions || []).map(q => {
-    const v = verdictClass(q.score);
-    return `<div class="q-item ${v}">
+    const b = bandOf(q.score);
+    const sm = q.structural_map || {};
+    return `<div class="q-item ${b}">
       <div class="q-header">
         <div class="q-text">${q.question || ''}</div>
-        <div class="q-score ${v}">${q.score || ''}</div>
+        <div class="q-score ${b}">${q.score ?? ''}</div>
       </div>
       <div class="q-body">
         <strong style="font-weight:500;color:var(--ink2)">Type:</strong> ${q.type || ''}<br>
-        <strong style="font-weight:500;color:var(--ink2)">Structure:</strong> ${q.structural_map || ''}<br>
+        <dl class="smap">
+          <dt>Situation</dt><dd>${sm.situation || ''}</dd>
+          <dt>Task</dt><dd>${sm.task || ''}</dd>
+          <dt>Action</dt><dd>${sm.action || ''}</dd>
+          <dt>Result</dt><dd>${sm.result || ''}</dd>
+        </dl>
         <strong style="font-weight:500;color:var(--ink2)">Critique:</strong> ${q.critique || ''}<br>
         <strong style="font-weight:500;color:var(--ink2)">Coach:</strong> ${q.coach_note || ''}
       </div>
@@ -863,7 +986,7 @@ function renderResults(transcript, analysis, training) {
       <div class="r-block-label">Weak areas</div>
       <div class="train-list">${weakAreas.map(w => `
         <div class="train-item">
-          <div class="train-priority ${levelClass(w.level)}">${levelLabel(w.level)}</div>
+          <div class="train-priority green">${w.dimension || ''} · expected: ${w.level_expected || ''}</div>
           <div class="train-body">
             <strong style="font-weight:500">Problem:</strong> ${w.problem || ''}<br>
             <strong style="font-weight:500">Frequency:</strong> ${w.frequency || ''}
@@ -875,8 +998,8 @@ function renderResults(transcript, analysis, training) {
   // Training items
   document.getElementById('train-list').innerHTML = (training.training_items || []).map(t => `
     <div class="train-item">
-      <div class="train-priority green">Priority ${t.priority ?? ''}</div>
-      <div class="train-q">${t.question || ''}</div>
+      <div class="train-priority green">Priority ${t.priority ?? ''} · ${t.dimension || ''}</div>
+      <div class="train-q">${t.question_to_practice || ''}</div>
       <div class="train-body">
         <strong style="font-weight:500">Framework:</strong> ${t.framework || ''}<br>
         <strong style="font-weight:500">Add:</strong> ${t.what_to_add || ''}<br>
@@ -940,6 +1063,7 @@ async function runAnalysis() {
     interviewType: resolveSelectValue('interview-type'),
     targetLevel: resolveSelectValue('target-level'),
     jobDesc: document.getElementById('job-desc').value.trim(),
+    companyValues: document.getElementById('company-values').value.trim(),
     resume: document.getElementById('resume').value.trim(),
     extraCtx: document.getElementById('extra-context').value.trim(),
   };
