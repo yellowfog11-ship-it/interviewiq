@@ -759,7 +759,7 @@ async function loadHistoryList() {
           <div style="font-weight:500;font-size:14px">${it.title || it.interview_type || 'Interview'}</div>
           <div style="font-size:12px;color:var(--ink3)">${new Date(it.created_at).toLocaleString()}</div>
         </div>
-        <div class="band-badge band-${it.verdict_color || 'amber'}" style="flex-shrink:0;margin-bottom:0">${it.verdict_label || ''} · ${it.overall_score || ''}</div>
+        <div class="band-badge band-${it.verdict_color || 'amber'}" style="flex-shrink:0;margin-bottom:0">${it.verdict_label || ''} · ${it.overall_score ? it.overall_score + '/10' : ''}</div>
       </div>
       <div class="hist-detail" id="hist-detail-${it.id}" style="display:none;border-top:1px solid var(--border)"></div>
     </div>
@@ -912,7 +912,7 @@ function renderResults(transcript, analysis, training) {
   // Overall score + verdict
   const band = analysis.verdict?.color || bandOf(analysis.overall_score);
   document.getElementById('overall-score-num').className = 'score-num band-' + band;
-  document.getElementById('overall-score-num').textContent = analysis.overall_score ?? '—';
+  document.getElementById('overall-score-num').textContent = analysis.overall_score != null ? `${analysis.overall_score}/10` : '—';
   document.getElementById('verdict-badge-wrap').innerHTML =
     `<div class="band-badge band-${band}">${analysis.verdict?.label || ''}</div>`;
   document.getElementById('summary-text').textContent = analysis.summary || '';
@@ -937,7 +937,7 @@ function renderResults(transcript, analysis, training) {
       const b = bandOf(p.overall_score ?? 0);
       const label = p.current ? 'Now' : (p.session_name || '').slice(0, 14);
       return `<div class="pc-bar-wrap">
-        <div class="pc-score">${p.overall_score ?? '—'}</div>
+        <div class="pc-score">${p.overall_score != null ? p.overall_score + '/10' : '—'}</div>
         <div class="pc-bar band-bg-${b} ${p.current ? 'current' : ''}" style="height:${h}%;background:var(--band-${b})" title="${p.session_name || ''}"></div>
         <div class="pc-label">${label}</div>
       </div>`;
@@ -958,7 +958,7 @@ function renderResults(transcript, analysis, training) {
     return `<div class="dim-card">
       <div class="dim-header">
         <div class="dim-name-wrap"><span class="dim-name">${d.name || d.key || ''}</span>${tag}</div>
-        <div class="dim-score band-${b}">${hasScore ? d.score : '—'}</div>
+        <div class="dim-score band-${b}">${hasScore ? d.score + '/10' : '—'}</div>
       </div>
       ${bar}
       <div class="dim-eval">${d.evaluation || ''}</div>
@@ -990,7 +990,7 @@ function renderResults(transcript, analysis, training) {
     return `<div class="q-item ${b}">
       <div class="q-header">
         <div class="q-text">${q.question || ''}</div>
-        <div class="q-score ${b}">${q.score ?? ''}</div>
+        <div class="q-score ${b}">${q.score != null ? q.score + '/10' : ''}</div>
       </div>
       <div class="q-body">
         <strong style="font-weight:500;color:var(--ink2)">Type:</strong> ${q.type || ''}<br>
