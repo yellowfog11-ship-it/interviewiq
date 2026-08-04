@@ -1013,7 +1013,7 @@ function renderResults(transcript, analysis, training) {
       <div class="r-block-label">Weak areas</div>
       <div class="train-list">${weakAreas.map(w => `
         <div class="train-item">
-          <div class="train-priority green">${w.dimension || ''} · expected: ${w.level_expected || ''}</div>
+          <div class="train-priority band-red">${w.dimension || ''} · expected: ${w.level_expected || ''}</div>
           <div class="train-body">
             <strong style="font-weight:500">Problem:</strong> ${w.problem || ''}<br>
             <strong style="font-weight:500">Frequency:</strong> ${w.frequency || ''}
