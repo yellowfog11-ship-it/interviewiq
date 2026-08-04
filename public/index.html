@@ -681,6 +681,10 @@ async function loadHistoryItem(id) {
   if (!r.ok) return;
   const row = await r.json();
   closeHistory();
+  document.getElementById('gate-signin').style.display = 'none';
+  document.getElementById('gate-paywall').style.display = 'none';
+  document.getElementById('form-body').style.display = 'none';
+  document.getElementById('progress').classList.remove('show');
   requestAnimationFrame(() => {
     renderResults(row.transcript, row.analysis, row.training);
   });
@@ -697,6 +701,8 @@ let currentFileDurationHours = null;
 function handleFile(f) {
   currentFile = f;
   currentFileDurationHours = null;
+  document.getElementById('results').classList.remove('show');
+  refreshEntitlement();
   document.getElementById('drop-zone').style.display = 'none';
   document.getElementById('file-chip').style.display = 'flex';
   document.getElementById('fc-name').textContent = f.name;
