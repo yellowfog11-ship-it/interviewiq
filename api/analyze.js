@@ -47,7 +47,7 @@ ${transcript}
 
 Return ONLY this exact JSON (no markdown, no extra text):
 {
-  "title": "short descriptive title for this interview, e.g. company name + round type if mentioned ('Mastercard — Hiring Manager Round'), otherwise the main topic ('Mock Fintech App Case'). Max 6 words.",
+  "title": "short descriptive title based on what is ACTUALLY said in the transcript, not on the 'Interview type' hint below (that field is often wrong or generic). Determine the real round type from context: recruiter screens are casual/logistics-focused, hiring manager rounds go deep on the candidate's actual work, panel/technical rounds probe specific skills. Include the company name only if it is explicitly mentioned in the transcript. Examples: 'Mastercard — Recruiter Screen', 'Mock Fintech App Case', 'Series B Startup — Technical Round'. Max 6 words.",
   "overall_score": <integer 1-10>,
   "communication_score": <integer 1-10>,
   "content_score": <integer 1-10>,
