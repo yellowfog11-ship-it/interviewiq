@@ -451,10 +451,17 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
       <p style="margin-top:16px;font-size:13px;color:var(--ink3)">This can take a few minutes for longer recordings. Please keep this tab open and don't refresh the page.</p>
     </div>
 
-    <!-- results -->
-    <div class="results" id="results">
-      <hr class="r-divider" style="margin:0 36px 0">
+  </div>
+</div>
+</div><!-- /home-content -->
 
+<!-- ═══ RESULTS (standalone, reused for both a fresh run and a history item) ═══ -->
+<div id="results-page" style="display:none">
+  <div class="section" style="padding-bottom:0">
+    <button class="nav-btn" id="results-back-btn" onclick="closeResults()">← Back</button>
+  </div>
+  <div style="max-width:960px;margin:20px auto 80px;background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden">
+    <div class="results show" id="results">
       <div style="padding:36px">
         <!-- Overall scorecard -->
         <div class="r-block">
@@ -519,10 +526,8 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
         </div>
       </div>
     </div>
-
   </div>
 </div>
-</div><!-- /home-content -->
 
 <!-- ═══ HISTORY ═══ -->
 <div id="history-section" class="section" style="display:none;padding-bottom:80px">
@@ -646,12 +651,19 @@ if (new URLSearchParams(location.search).get('checkout') === 'success') {
   history.replaceState(null, '', location.pathname);
 }
 
-// ─── History ───
+// ─── History / Results navigation ───
+// resultsContext tracks where "← Back" on the results page should return to.
+let resultsContext = 'home';
+
 async function toggleHistory() {
   document.getElementById('home-content').style.display = 'none';
+  document.getElementById('results-page').style.display = 'none';
   document.getElementById('history-section').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  await loadHistoryList();
+}
 
+async function loadHistoryList() {
   const list = document.getElementById('history-list');
   list.innerHTML = '<p style="padding:24px;text-align:center;color:var(--ink3);font-size:14px">Loading…</p>';
   document.getElementById('history-empty').style.display = 'none';
@@ -680,14 +692,21 @@ async function loadHistoryItem(id) {
   const r = await fetch('/api/history?id=' + id, { headers: await authHeaders() });
   if (!r.ok) return;
   const row = await r.json();
-  closeHistory();
-  document.getElementById('gate-signin').style.display = 'none';
-  document.getElementById('gate-paywall').style.display = 'none';
-  document.getElementById('form-body').style.display = 'none';
-  document.getElementById('progress').classList.remove('show');
-  requestAnimationFrame(() => {
-    renderResults(row.transcript, row.analysis, row.training);
-  });
+  resultsContext = 'history';
+  document.getElementById('history-section').style.display = 'none';
+  document.getElementById('results-back-btn').textContent = '← Back to history';
+  document.getElementById('results-back-btn').style.display = 'inline-block';
+  renderResults(row.transcript, row.analysis, row.training);
+}
+
+function closeResults() {
+  document.getElementById('results-page').style.display = 'none';
+  if (resultsContext === 'history') {
+    document.getElementById('history-section').style.display = 'block';
+  } else {
+    document.getElementById('home-content').style.display = 'block';
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // drag & drop
@@ -701,7 +720,7 @@ let currentFileDurationHours = null;
 function handleFile(f) {
   currentFile = f;
   currentFileDurationHours = null;
-  document.getElementById('results').classList.remove('show');
+  document.getElementById('results-page').style.display = 'none';
   refreshEntitlement();
   document.getElementById('drop-zone').style.display = 'none';
   document.getElementById('file-chip').style.display = 'flex';
@@ -879,8 +898,8 @@ function renderResults(transcript, analysis, training) {
 
   // Transcript
   document.getElementById('transcript-box').textContent = transcript;
-  document.getElementById('results').classList.add('show');
-  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('results-page').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 async function runAnalysis() {
@@ -895,7 +914,7 @@ async function runAnalysis() {
 
   document.getElementById('run-btn').disabled = true;
   document.getElementById('progress').classList.add('show');
-  document.getElementById('results').classList.remove('show');
+  document.getElementById('results-page').style.display = 'none';
   setStep(1, ''); setStep(2, ''); setStep(3, '');
 
   try {
@@ -961,6 +980,8 @@ async function runAnalysis() {
     const training = await tr.json();
     setStep(3, 'done');
 
+    resultsContext = 'home';
+    document.getElementById('results-back-btn').style.display = 'none';
     renderResults(transcript, analysis, training);
     refreshEntitlement();
   } catch (err) {
