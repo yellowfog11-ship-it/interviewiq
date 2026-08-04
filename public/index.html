@@ -681,7 +681,9 @@ async function loadHistoryItem(id) {
   if (!r.ok) return;
   const row = await r.json();
   closeHistory();
-  renderResults(row.transcript, row.analysis, row.training);
+  requestAnimationFrame(() => {
+    renderResults(row.transcript, row.analysis, row.training);
+  });
 }
 
 // drag & drop
