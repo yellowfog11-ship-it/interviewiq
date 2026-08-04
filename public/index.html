@@ -544,6 +544,8 @@ window.addEventListener('load', async function () {
   Clerk.addListener(renderAuthUI);
 });
 
+let userButtonMounted = false;
+
 function renderAuthUI() {
   const signinBtn = document.getElementById('signin-btn');
   const userButtonEl = document.getElementById('clerk-userbutton');
@@ -551,13 +553,18 @@ function renderAuthUI() {
   if (Clerk.isSignedIn) {
     signinBtn.style.display = 'none';
     historyBtn.style.display = 'inline-block';
-    userButtonEl.innerHTML = '';
-    Clerk.mountUserButton(userButtonEl);
+    if (!userButtonMounted) {
+      Clerk.mountUserButton(userButtonEl);
+      userButtonMounted = true;
+    }
     refreshEntitlement();
   } else {
     signinBtn.style.display = 'inline-block';
     historyBtn.style.display = 'none';
-    userButtonEl.innerHTML = '';
+    if (userButtonMounted) {
+      Clerk.unmountUserButton(userButtonEl);
+      userButtonMounted = false;
+    }
     document.getElementById('history-section').style.display = 'none';
     refreshGateUI(null);
   }
