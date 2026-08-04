@@ -455,12 +455,9 @@ footer{text-align:center;padding:40px 24px;color:var(--ink3);font-size:13px;bord
 </div>
 </div><!-- /home-content -->
 
-<!-- ═══ RESULTS (standalone, reused for both a fresh run and a history item) ═══ -->
+<!-- ═══ RESULTS (standalone content, moved between the home page and history rows as needed) ═══ -->
 <div id="results-page" style="display:none">
-  <div class="section" style="padding-bottom:0">
-    <button class="nav-btn" id="results-back-btn" onclick="closeResults()">← Back</button>
-  </div>
-  <div style="max-width:960px;margin:20px auto 80px;background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden">
+  <div id="results-card" style="max-width:960px;margin:20px auto 80px;background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden">
     <div class="results show" id="results">
       <div style="padding:36px">
         <!-- Overall scorecard -->
@@ -651,15 +648,17 @@ if (new URLSearchParams(location.search).get('checkout') === 'success') {
   history.replaceState(null, '', location.pathname);
 }
 
-// ─── History / Results navigation ───
-// resultsContext tracks where "← Back" on the results page should return to.
-let resultsContext = 'home';
+// ─── History (accordion: one row's analysis expands inline at a time) ───
+let expandedHistoryId = null;
+let historyCache = {};
 
 async function toggleHistory() {
   document.getElementById('home-content').style.display = 'none';
   document.getElementById('results-page').style.display = 'none';
   document.getElementById('history-section').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  expandedHistoryId = null;
+  historyCache = {};
   await loadHistoryList();
 }
 
@@ -673,12 +672,15 @@ async function loadHistoryList() {
   const items = await r.json();
   document.getElementById('history-empty').style.display = items.length ? 'none' : 'block';
   list.innerHTML = items.map(it => `
-    <div style="padding:16px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="loadHistoryItem(${it.id})">
-      <div>
-        <div style="font-weight:500;font-size:14px">${it.title || it.interview_type || 'Interview'}</div>
-        <div style="font-size:12px;color:var(--ink3)">${new Date(it.created_at).toLocaleString()}</div>
+    <div class="hist-item" id="hist-item-${it.id}" style="border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden">
+      <div style="padding:16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="toggleHistoryRow(${it.id})">
+        <div>
+          <div style="font-weight:500;font-size:14px">${it.title || it.interview_type || 'Interview'}</div>
+          <div style="font-size:12px;color:var(--ink3)">${new Date(it.created_at).toLocaleString()}</div>
+        </div>
+        <div class="verdict-badge verdict-${verdictClass(it.overall_verdict)}" style="flex-shrink:0">${it.overall_verdict || ''} · ${it.overall_score || ''}</div>
       </div>
-      <div class="verdict-badge verdict-${verdictClass(it.overall_verdict)}" style="flex-shrink:0">${it.overall_verdict || ''} · ${it.overall_score || ''}</div>
+      <div class="hist-detail" id="hist-detail-${it.id}" style="display:none;border-top:1px solid var(--border)"></div>
     </div>
   `).join('');
 }
@@ -688,25 +690,36 @@ function closeHistory() {
   document.getElementById('home-content').style.display = 'block';
 }
 
-async function loadHistoryItem(id) {
-  const r = await fetch('/api/history?id=' + id, { headers: await authHeaders() });
-  if (!r.ok) return;
-  const row = await r.json();
-  resultsContext = 'history';
-  document.getElementById('history-section').style.display = 'none';
-  document.getElementById('results-back-btn').textContent = '← Back to history';
-  document.getElementById('results-back-btn').style.display = 'inline-block';
-  renderResults(row.transcript, row.analysis, row.training);
-}
-
-function closeResults() {
-  document.getElementById('results-page').style.display = 'none';
-  if (resultsContext === 'history') {
-    document.getElementById('history-section').style.display = 'block';
-  } else {
-    document.getElementById('home-content').style.display = 'block';
+async function toggleHistoryRow(id) {
+  if (expandedHistoryId === id) {
+    document.getElementById('hist-detail-' + id).style.display = 'none';
+    expandedHistoryId = null;
+    return;
   }
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (expandedHistoryId !== null) {
+    const prevDetail = document.getElementById('hist-detail-' + expandedHistoryId);
+    if (prevDetail) prevDetail.style.display = 'none';
+  }
+  expandedHistoryId = id;
+
+  const detailEl = document.getElementById('hist-detail-' + id);
+  detailEl.style.display = 'block';
+  detailEl.innerHTML = '<p style="padding:24px;text-align:center;color:var(--ink3);font-size:14px">Loading…</p>';
+
+  let row = historyCache[id];
+  if (!row) {
+    const r = await fetch('/api/history?id=' + id, { headers: await authHeaders() });
+    if (!r.ok) { detailEl.innerHTML = '<p style="padding:24px;text-align:center;color:var(--danger);font-size:14px">Failed to load.</p>'; return; }
+    row = await r.json();
+    historyCache[id] = row;
+  }
+
+  if (expandedHistoryId !== id) return; // user moved on before this resolved
+  detailEl.innerHTML = '';
+  detailEl.appendChild(document.getElementById('results-card'));
+  renderResults(row.transcript, row.analysis, row.training);
+  detailEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 // drag & drop
@@ -898,8 +911,6 @@ function renderResults(transcript, analysis, training) {
 
   // Transcript
   document.getElementById('transcript-box').textContent = transcript;
-  document.getElementById('results-page').style.display = 'block';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 async function runAnalysis() {
@@ -980,9 +991,10 @@ async function runAnalysis() {
     const training = await tr.json();
     setStep(3, 'done');
 
-    resultsContext = 'home';
-    document.getElementById('results-back-btn').style.display = 'none';
+    document.getElementById('results-page').appendChild(document.getElementById('results-card'));
+    document.getElementById('results-page').style.display = 'block';
     renderResults(transcript, analysis, training);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     refreshEntitlement();
   } catch (err) {
     showError(err.message);
